@@ -20,12 +20,12 @@ namespace GateNetworkDotNet.Gates.Plugs
         /// <summary>
         /// The input connection plugged into the plug.
         /// </summary>
-        private List< Connection > inputConnections;
+        private List< Connection > sourceConnections;
 
         /// <summary>
         /// The output connections plugged into the plug.
         /// </summary>
-        private List< Connection > outputConnections;
+        private List< Connection > targetConnections;
 
         #endregion // Private instance fields
 
@@ -51,5 +51,44 @@ namespace GateNetworkDotNet.Gates.Plugs
         }
 
         #endregion // Public instance properties
+
+        #region Public instance constructors
+        
+        /// <summary>
+        /// Creates a new plug.
+        /// </summary>
+        public Plug()
+        {
+            sourceConnections = new List< Connection >();
+            targetConnections = new List< Connection >();
+        }
+
+        #endregion // Public instance constructors
+
+        #region Public instance methods
+
+        /// <summary>
+        /// Plugs a source connection into the plug.
+        /// </summary>
+        /// 
+        /// <param name="connection">The source connection.</param>
+        public void PlugSourceConnection( Connection connection )
+        {
+            sourceConnections.Add( connection );
+            connection.TargetPlug = this;
+        }
+
+        /// <summary>
+        /// Plugs a target connecion into the plug.
+        /// </summary>
+        /// 
+        /// <param name="connection">The target connection.</param>
+        public void PlugTargetConnection( Connection connection )
+        {
+            targetConnections.Add( connection );
+            connection.SourcePlug = this;
+        }
+
+        #endregion // Public instance methods
     }
 }

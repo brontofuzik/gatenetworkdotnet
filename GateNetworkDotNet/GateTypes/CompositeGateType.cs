@@ -96,15 +96,11 @@ namespace GateNetworkDotNet.GateTypes
         /// Condition 2: <c>inputPlugNames</c> contains an illegal name.
         /// Condition 3: <c>outputPlugNames</c> contains an illegal name.
         /// </exception>
-        /// <exception cref="System.ArgumentNullException">
-        /// Condition 1: <c>inputPlugNames</c> is <c>null</c>.
-        /// Condition 2: <c>outputPlugNames</c> is <c>null</c>.
-        /// </exception>
         /// <exception cref="System.ArgumentException">
         /// Consition 1: <c>inputPlugNames</c> contains less than zero plug name. 
         /// Condition 2: <c>outputPlugNames</c> contains less than one plug name. 
         /// </exception>
-        public CompositeGateType(string name, List< string > inputPlugNames, List< string > outputPlugNames, List< string > nestedGates, List< string > connections, Dictionary< string, GateType > gateTypes )
+        public CompositeGateType(string name, string inputPlugNames, string outputPlugNames, List< string > nestedGates, List< string > connections, Dictionary< string, GateType > gateTypes )
             : base( name, inputPlugNames, outputPlugNames )
         {
             //

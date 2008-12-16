@@ -27,47 +27,47 @@ namespace GateNetworkDotNet
                 Dictionary< string, GateType > gateTypes = new Dictionary< string, GateType >();
 
                 string name;
-                List< string > inputPlugNames;
-                List< string > outputPlugNames;
+                string inputPlugNames;
+                string outputPlugNames;
                 List< string > transitions;
                 GateType gateType;
 
                 // Implicitly defined basic gate type: "0".
                 name = "0";
-                inputPlugNames = new List< string >( new string[ 0 ] );
-                outputPlugNames = new List< string >( new string[] { "o" } );
+                inputPlugNames = "";
+                outputPlugNames = "o";
                 transitions = new List< string >( new string[] { "0" } );
                 gateType = new BasicGateType( name, inputPlugNames, outputPlugNames, transitions );
                 gateTypes.Add( name, gateType );
 
                 // Implicitly defined basic gate type: "1".
                 name = "1";
-                inputPlugNames = new List< string >( new string[ 0 ] );
-                outputPlugNames = new List< string >( new string[] { "o" } );
+                inputPlugNames = "";
+                outputPlugNames = "o";
                 transitions = new List< string >( new string[] { "1" } );
                 gateType = new BasicGateType( name, inputPlugNames, outputPlugNames, transitions );
                 gateTypes.Add( name, gateType );
 
                 // Basic gate type: "and".
                 name = "and";
-                inputPlugNames = new List< string >( new string[] { "i0", "i1" } );
-                outputPlugNames = new List< string >( new string[] { "o" } );
+                inputPlugNames = "i0 i1";
+                outputPlugNames = "o";
                 transitions = new List< string >( new string[] { "1 1 1" } );
                 gateType = new BasicGateType( name, inputPlugNames, outputPlugNames, transitions );
                 gateTypes.Add( name, gateType );
 
                 // basic gate type: "or".
                 name = "or";
-                inputPlugNames = new List< string >( new string[] { "i0", "i1" } );
-                outputPlugNames = new List< string >( new string[] { "o" } );
+                inputPlugNames = "i0 i1";
+                outputPlugNames = "o";
                 transitions = new List< string >( new string[] { "1 1 1", "0 1 1", "1 0 1" } );
                 gateType = new BasicGateType( name, inputPlugNames, outputPlugNames, transitions );
                 gateTypes.Add( name, gateType );
 
                 // Basic gate type: "not".
                 name = "not";
-                inputPlugNames = new List< string >( new string[] { "i" } );
-                outputPlugNames = new List< string >( new string[] { "o" } );
+                inputPlugNames = "i";
+                outputPlugNames = "o";
                 transitions = new List< string >( new string[] { "0 1" } );
                 gateType = new BasicGateType( name, inputPlugNames, outputPlugNames, transitions );
                 gateTypes.Add( name, gateType );
@@ -117,8 +117,8 @@ namespace GateNetworkDotNet
 
                 // Composite gate type: "nand".
                 name = "nand";
-                inputPlugNames = new List< string >( new string[] { "i0", "i1" } );
-                outputPlugNames = new List< string >( new string[] { "o" } );
+                inputPlugNames = "i0 i1";
+                outputPlugNames = "o";
                 nestedGates = new List< string >( new string[] { "a and", "n not" } );
                 connections = new List< string >( new string[] { "a.i0->i0", "a.i1->i1", "n.i->a.o", "o->n.o" } );
                 gateType = new CompositeGateType( name, inputPlugNames, outputPlugNames, nestedGates, connections, gateTypes );

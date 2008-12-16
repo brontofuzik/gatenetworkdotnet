@@ -22,12 +22,12 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// The names of the input plugs.
         /// </summary>
-        private List< string > inputPlugNames;
+        private string[] inputPlugNames;
 
         /// <summary>
         /// The names of the output plugs.
         /// </summary>
-        private List< string > outputPlugNames;
+        private string[] outputPlugNames;
 
         #endregion // Private instance fields
 
@@ -51,7 +51,7 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// 
         /// </summary>
-        public List< string > InputPlugNames
+        public string[] InputPlugNames
         {
             get
             {
@@ -70,14 +70,14 @@ namespace GateNetworkDotNet.GateTypes
         {
             get
             {
-                return inputPlugNames.Count;
+                return inputPlugNames.Length;
             }
         }
 
         /// <summary>
         /// 
         /// </summary>
-        public List< string > OutputPlugNames
+        public string[] OutputPlugNames
         {
             get
             {
@@ -96,7 +96,7 @@ namespace GateNetworkDotNet.GateTypes
         {
             get
             {
-                return outputPlugNames.Count;
+                return outputPlugNames.Length;
             }
         }
 
@@ -117,59 +117,52 @@ namespace GateNetworkDotNet.GateTypes
         /// Condition 2: <c>inputPlugNames</c> contains an illegal name.
         /// Condition 3: <c>outputPlugNames</c> contains an illegal name.
         /// </exception>
-        /// <exception cref="System.ArgumentNullException">
-        /// Condition 1: <c>inputPlugNames</c> is <c>null</c>.
-        /// Condition 2: <c>outputPlugNames</c> is <c>null</c>.
-        /// </exception>
         /// <exception cref="System.ArgumentException">
         /// Consition 1: <c>inputPlugNames</c> contains less than zero plug name. 
         /// Condition 2: <c>outputPlugNames</c> contains less than one plug name. 
         /// </exception>
-        protected GateType( string name, List< string > inputPlugNames, List< string > outputPlugNames )
+        protected GateType( string name, string inputPlugNames, string outputPlugNames )
         {
+            //
             // Validate the name.
-            // The name is valid if it is a legal name.
+            //
             if (!Program.IsLegalIdentifier( name ))
             {
                 throw new IllegalIdentifierException( name );
             }
             this.name = name;
 
+            //
             // Validate the names of the input plugs.
-            if (inputPlugNames == null)
-            {
-                throw new ArgumentNullException( "inputPlugNames" );
-            }
-            if (inputPlugNames.Count < 0)
+            //
+            this.inputPlugNames = (inputPlugNames.Length > 0) ? inputPlugNames.Split( ' ' ) : new string[ 0 ];
+            if (InputPlugCount < 0)
             {
                 throw new ArgumentException( "inputPlugNames" );
             }
-            foreach (string inputPlugName in inputPlugNames)
+            foreach (string inputPlugName in this.inputPlugNames)
             {
                 if (!Program.IsLegalIdentifier( inputPlugName ))
                 {
                     throw new IllegalIdentifierException( inputPlugName );
                 }
             }
-            this.inputPlugNames = inputPlugNames;
 
+            //
             // Validate the names of the output plugs.
-            if (outputPlugNames == null)
-            {
-                throw new ArgumentNullException( "outputPlugNames" );
-            }
-            if (outputPlugNames.Count < 1)
+            //
+            this.outputPlugNames = (outputPlugNames.Length > 0) ? outputPlugNames.Split( ' ' ) : new string[ 0 ];
+            if (OutputPlugCount < 1)
             {
                 throw new ArgumentException( "outputPlugNames" );
             }
-            foreach (string outputPlugName in outputPlugNames)
+            foreach (string outputPlugName in this.outputPlugNames)
             {
                 if (!Program.IsLegalIdentifier( outputPlugName ))
                 {
                     throw new IllegalIdentifierException( outputPlugName );
                 }
             }
-            this.outputPlugNames = outputPlugNames;
         }
 
         #endregion // Protected instance constructors
