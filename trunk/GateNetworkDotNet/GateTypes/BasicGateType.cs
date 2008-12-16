@@ -48,26 +48,23 @@ namespace GateNetworkDotNet.GateTypes
         /// </summary>
         /// 
         /// <param name="name">The name of the gate type.</param>
-        /// <param name="inputPlugNames">The list of the inputs' names.</param>
-        /// <param name="outputs">The list of the outputs' names.</param>
+        /// <param name="inputPlugNames">The names of the input plugs.</param>
+        /// <param name="outputs">The names of the output plugs.</param>
         /// <param name="transitions">The transitions.</param>
         /// 
-        /// <exception cref="Network.Exceptions.IllegalNameException">
+        /// <exception cref="GateNetworkDotNet.Exceptions.IllegalTransitionException">
+        /// Consition: the number of inputs and outputs is not equal to the length of the transition.
+        /// </exception>
+        /// <exception cref="GateNetworkDorNet.Exceptions.IllegalNameException">
         /// Condition 1: <c>name</c> is an illegal name.
         /// Condition 2: <c>inputPlugNames</c> contains an illegal name.
         /// Condition 3: <c>outputPlugNames</c> contains an illegal name.
         /// </exception>
-        /// <exception cref="Network.Exceptions.IllegalTransitionException">
-        /// Consition: the number of inputs and outputs is not equal to the length of the transition.
-        /// </exception>
-        /// <exception cref="System.ArgumentNullException">
-        /// Condition 1: <c>inputPlugNames</c> is <c>null</c>.
-        /// Condition 2: <c>outputPlugNames</c> is <c>null</c>.
-        /// </exception>
         /// <exception cref="System.ArgumentException">
-        /// Condition: <c>outputPlugNames</c> is empty.
+        /// Consition 1: <c>inputPlugNames</c> contains less than zero plug name. 
+        /// Condition 2: <c>outputPlugNames</c> contains less than one plug name. 
         /// </exception>
-        public BasicGateType( string name, List< string > inputPlugNames, List< string > outputPlugNames, List< string > transitions )
+        public BasicGateType( string name, string inputPlugNames, string outputPlugNames, List< string > transitions )
             : base( name, inputPlugNames, outputPlugNames )
         {
             transitionFunction = new TransitionFunction( InputPlugCount, OutputPlugCount, transitions );

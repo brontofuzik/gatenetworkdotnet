@@ -2,6 +2,7 @@
 
 using GateNetworkDotNet.GateTypes;
 using GateNetworkDotNet.Gates.Connections;
+using GateNetworkDotNet.Gates.Plugs;
 
 namespace GateNetworkDotNet.Gates
 {
@@ -128,8 +129,42 @@ namespace GateNetworkDotNet.Gates
             int connectionIndex = 0;
             foreach (KeyValuePair< string, string > kvp in (Type as CompositeGateType).Connections)
             {
-                string connectionTo = kvp.Key;
-                string connectionFrom = kvp.Value;
+                // Get the target plug.
+                string connectionTarget = kvp.Key;
+                string[] targetPlugPath = connectionTarget.Split( '.' );
+                Plug targetPlug;
+                if (targetPlugPath.Length == 1)
+                {
+                    // The target plug is one of this gate's output plugs.
+                    targetPlug;
+                }
+                else
+                {
+                    // The target plug is one of the nested gates' input plugs.
+                    targetPlug;
+                }
+
+                // Get the source plug.
+                string connectionSource = kvp.Value;
+                string[] sourcePlugPath = connectionSource.Split( '.' );
+                Plug sourcePlug;
+                if (sourcePlugPath.Length == 1)
+                {
+                    // The source plug is one of this gate's input plugs.
+                    sourcePlug;
+                }
+                else
+                {
+                    // The source plug is one of the nested gates' output plugs.
+                    sourcePlug;
+                }
+
+                // Construct the connection.
+                Connection connection = new Connection();
+                sourcePlug.PlugTargetConnection( connection );
+                targetPlug.PlugSourceConnection( connection );
+
+                connections[ connectionIndex++ ] = connection; 
             }
         }
 
