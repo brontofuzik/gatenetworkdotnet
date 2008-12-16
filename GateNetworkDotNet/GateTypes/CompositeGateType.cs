@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using GateNetworkDotNet.Exceptions;
 using GateNetworkDotNet.Gates;
@@ -18,82 +19,157 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// The gates comprising the composite gate type.
         /// </summary>
-        private Dictionary< string, Gate > nestedGates;
+        private Dictionary< string, GateType > nestedGateTypes;
 
         /// <summary>
-        /// The connections.
+        /// The connections within the composite gate type.
         /// </summary>
-        private List< Connection > connections;
+        private Dictionary< string, string > connections;
 
         #endregion // Private instance fields
+
+        #region Public instance properties
+
+        public Dictionary< string, GateType > NestedGateTypes
+        {
+            get
+            {
+                return nestedGateTypes;
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of the nested gates.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The number of the nested gates.
+        /// </value>
+        public int NestedGateCount
+        {
+            get
+            {
+                return nestedGateTypes.Count;
+            }
+        }
+
+        public Dictionary< string, string > Connections
+        {
+            get
+            {
+                return connections;
+            }
+        }
+
+        /// <summary>
+        /// The number of the connections.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The number of the connections.
+        /// </value>
+        public int ConnectionCount
+        {
+            get
+            {
+                return connections.Count;
+            }
+        }
+
+        #endregion // Public instance properties
 
         #region Public instance contructors
 
         /// <summary>
-        /// Creates a new composite gate type.
+        /// Creates a new gate type.
         /// </summary>
         /// 
-        /// <param name="name">The name of the composite gate type.</param>
-        /// <param name="inputs">The list of the inputs' names.</param>
-        /// <param name="outputs">The list of the outputs' names.</param>
-        /// <param name="gates">The gates comprising the composite gate type.</param>
+        /// <param name="name">The name of the gate type.</param>
+        /// <param name="inputPlugNames">The names of the input plugs.</param>
+        /// <param name="outputPlugNames">The names of the output plugs.</param>
+        /// <param name="nestedGates">The nested gates.</param>
         /// <param name="connections">The connections.</param>
-        /// <param name="gateTypes">The basic gate types.</param>
+        /// <param name="gateTypes">The dictionary of known gate types.</param>
         /// 
-        /// <exception cref="Network.Exceptions.IllegalNameException">
+        /// <exception cref="GateNetworkDorNet.Exceptions.IllegalNameException">
         /// Condition 1: <c>name</c> is an illegal name.
-        /// Condition 2: <c>inputs</c> contains an illegal name.
-        /// Condition 3: <c>outputts</c> contains an illegal name.
+        /// Condition 2: <c>inputPlugNames</c> contains an illegal name.
+        /// Condition 3: <c>outputPlugNames</c> contains an illegal name.
         /// </exception>
         /// <exception cref="System.ArgumentNullException">
-        /// Condition 1: <c>inputs</c> is <c>null</c>.
-        /// Condition 2: <c>outputs</c> is <c>null</c>.
+        /// Condition 1: <c>inputPlugNames</c> is <c>null</c>.
+        /// Condition 2: <c>outputPlugNames</c> is <c>null</c>.
         /// </exception>
         /// <exception cref="System.ArgumentException">
-        /// Condition: <c>outputs</c> is empty.
+        /// Consition 1: <c>inputPlugNames</c> contains less than zero plug name. 
+        /// Condition 2: <c>outputPlugNames</c> contains less than one plug name. 
         /// </exception>
-        public CompositeGateType( string name, List< string > inputs, List< string > outputs, List< string > gates, List< string > connections, Dictionary< string, BasicGateType > gateTypes )
-            : base( name, inputs, outputs )
+        public CompositeGateType(string name, List< string > inputPlugNames, List< string > outputPlugNames, List< string > nestedGates, List< string > connections, Dictionary< string, GateType > gateTypes )
+            : base( name, inputPlugNames, outputPlugNames )
         {
-            ////
-            //// Validate and construct the nested gates.
-            ////
-            //nestedGates = new Dictionary< string, Gate >();
-            //foreach (string gate in gates)
-            //{
-            //    string[] gateNameAndType = gate.Split( ' ' );
+            //
+            // Validate and construct the nested gates.
+            //
+            this.nestedGateTypes = new Dictionary< string, GateType >();
+            foreach (string nestedGate in nestedGates)
+            {
+                string[] nestedGateNameAndType = nestedGate.Split( ' ' );
 
-            //    if (gateNameAndType.Length != 2)
-            //    {
-            //        // TODO: Provide more specific exception.
-            //        throw new IllegalIdentifierException( gate );
-            //    }
+                if (nestedGateNameAndType.Length != 2)
+                {
+                    // TODO: Provide more specific exception.
+                    throw new ArgumentException( "nestedGates" );
+                }
 
-            //    string gateName = gateNameAndType[ 0 ];
-            //    string gateTypeStr = gateNameAndType[ 1 ];
+                // Validate the name of the nested gate.
+                string nestedGateName = nestedGateNameAndType[ 0 ];
+                // Validate the legality of the name of the nested gate.
+                if (!Program.IsLegalIdentifier( nestedGateName ))
+                {
+                    throw new ArgumentException( "nestedGates" );
+                }
+                // Validate the uniqueness of the name of the nested gate.
+                if (this.nestedGateTypes.ContainsKey( nestedGateName ))
+                {
+                    throw new ArgumentException( "nestedGates" );
+                }
 
-            //    try
-            //    {
-            //        BasicGateType gateType = gateTypes[gateTypeStr];
-            //        BasicGate basicGate = new BasicGate( gateName, gateType );
-                    
-            //        nestedGates.Add( gateName, basicGate );
-            //    }
-            //    catch (KeyNotFoundException e)
-            //    {
-            //        // TODO: Provide more specific exception.
-            //        Console.WriteLine( e.Message );
-            //    }
-            //}
+                // Validate the type of the nested gate.
+                string nestedGateTypeStr = nestedGateNameAndType[ 1 ];
+                // Validate the availability of the type of the nested gate.
+                if (!gateTypes.ContainsKey( nestedGateTypeStr ))
+                {
+                    throw new ArgumentException( "nestedGates" );
+                }
 
-            ////
-            //// Validate and construct the connections.
-            ////
-            //this.connections = new List< Connection >();
-            //foreach (string connection in connections)
-            //{
+                // Retrieve the type of the nested gate.
+                GateType nestedGateType = gateTypes[ nestedGateTypeStr ];
 
-            //}
+                // Store the nested gate.
+                this.nestedGateTypes.Add( nestedGateName, nestedGateType );
+            }
+
+            //
+            // Validate and construct the connections.
+            //
+            this.connections = new Dictionary< string, string >();
+            foreach (string connection in connections)
+            {
+                string[] connectionToAndFrom = Regex.Split( connection, "->" );
+
+                if (connectionToAndFrom.Length != 2)
+                {
+                    // TODO: Provide more specific exception.
+                    throw new ArgumentException( connection );
+                }
+
+                // TODO: Validate the connection.
+                string connectionTo = connectionToAndFrom[ 0 ];
+                string connectionFrom = connectionToAndFrom[ 1 ];
+
+                // Store the connection.
+                this.connections.Add( connectionTo, connectionFrom );
+            }
         }
 
         #endregion // Public instance contructors
@@ -101,15 +177,29 @@ namespace GateNetworkDotNet.GateTypes
         #region Public instance methods
 
         /// <summary>
-        /// Evaluates the transition function of the gate type.
+        /// Instantiates the composite gate object.
         /// </summary>
         /// 
-        /// <param name="inputs">The inputs.</param>
+        /// <param name="name">The name of the composite gate object.</param>
         /// 
         /// <returns>
-        /// The outputs.
+        /// The composite gate object.
         /// </returns>
-        public override string[] Evaluate( string[] inputs )
+        public override Gate Instantiate( string name )
+        {
+            return new CompositeGate( name, this );
+        }
+
+        /// <summary>
+        /// Evaluates the transition function of the composite gate type.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugValues">The values of the input plugs.</param>
+        /// 
+        /// <returns>
+        /// The values of the output plugs.
+        /// </returns>
+        public override string[] Evaluate( string[] inputPlugValues )
         {
             throw new NotImplementedException();
         }

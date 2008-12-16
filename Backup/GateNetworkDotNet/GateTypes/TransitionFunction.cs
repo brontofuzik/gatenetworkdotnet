@@ -26,24 +26,9 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// 
         /// </summary>
-        private Dictionary< string, string > transitions;
+        private Dictionary< string, string > dictionary;
 
         #endregion // Private instance fields
-
-        #region Public instance properties
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int TransitionLength
-        {
-            get
-            {
-                return inputPlugCount + outputPlugCount;
-            }
-        }
-
-        #endregion // Public instance properties
 
         #region Public instance constructors
 
@@ -53,7 +38,7 @@ namespace GateNetworkDotNet.GateTypes
         /// 
         /// <param name="inputPlugCount">The number of the input plugs.</param>
         /// <param name="outputPlugCount">The number of the output plugs.</param>
-        /// <param name="transitions">The dictionary.</param>
+        /// <param name="dictionary">The dictionary.</param>
         /// 
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>dictionary</c> is <c>null</c>.
@@ -62,7 +47,7 @@ namespace GateNetworkDotNet.GateTypes
         /// Condition 1: <c>inputPlugCount</c> is less than zero.
         /// Consition 2: <c>outputPlugCopunt</c> is less than one.
         /// </exception>
-        public TransitionFunction( int inputPlugCount, int outputPlugCount, List< string > transitions )
+        public TransitionFunction( int inputPlugCount, int outputPlugCount, Dictionary< string, string > dictionary )
         {
             // Validate the number of the input plugs.
             if (inputPlugCount < 0)
@@ -78,43 +63,12 @@ namespace GateNetworkDotNet.GateTypes
             }
             this.outputPlugCount = outputPlugCount;
 
-            //
-            // Validate and construct the transitions.
-            //
-            if (transitions == null)
+            // Validate the dictionary.
+            if (dictionary == null)
             {
-                throw new ArgumentNullException( "transitions" );
+                throw new ArgumentNullException( "dictionary" );
             }
-            this.transitions = new Dictionary< string, string >();
-            foreach (string transition in transitions)
-            {
-                // Split the transition line.
-                string[] inputsAndOutputs = transition.Split( ' ' );
-
-                if (inputsAndOutputs.Length != TransitionLength)
-                {
-                    throw new IllegalTransitionException( transition );
-                }
-
-                // Build the inputs string.
-                StringBuilder inputsSB = new StringBuilder();
-                for (int i = 0; i < inputPlugCount; i++)
-                {
-                    inputsSB.Append( inputsAndOutputs[ i ] );
-                }
-                string inputsStr = inputsSB.ToString();
-
-                // Build the outputs string.
-                StringBuilder outputsSB = new StringBuilder();
-                for (int i = inputPlugCount; i < TransitionLength; i++)
-                {
-                    outputsSB.Append( inputsAndOutputs[ i ] );
-                }
-                string outputsStr = outputsSB.ToString();
-
-                // Add the (inputs, outputs) key-value-pair into the dictionary.
-                this.transitions.Add( inputsStr, outputsStr );
-            }
+            this.dictionary = dictionary;
         }
 
         #endregion // Public instance construtors
@@ -146,7 +100,7 @@ namespace GateNetworkDotNet.GateTypes
             try
             {
                 // The transition function contains the mapping for the inputs.
-                outputs = transitions[ inputs ];    
+                outputs = dictionary[ inputs ];    
             }
             catch (KeyNotFoundException e)
             {

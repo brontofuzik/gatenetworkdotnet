@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using GateNetworkDotNet.Exceptions;
-using GateNetworkDotNet.Gates;
 
 namespace GateNetworkDotNet.GateTypes
 {
@@ -22,12 +22,12 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// The names of the input plugs.
         /// </summary>
-        private List< string > inputPlugNames;
+        private List< string > inputPlugsNames;
 
         /// <summary>
         /// The names of the output plugs.
         /// </summary>
-        private List< string > outputPlugNames;
+        private List< string > outputPlugsNames;
 
         #endregion // Private instance fields
 
@@ -49,17 +49,6 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public List< string > InputPlugNames
-        {
-            get
-            {
-                return inputPlugNames;
-            }
-        }
-
-        /// <summary>
         /// The number of the input plugs.
         /// </summary>
         /// 
@@ -70,18 +59,7 @@ namespace GateNetworkDotNet.GateTypes
         {
             get
             {
-                return inputPlugNames.Count;
-            }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public List< string > OutputPlugNames
-        {
-            get
-            {
-                return outputPlugNames;
+                return inputPlugsNames.Count;
             }
         }
 
@@ -96,7 +74,7 @@ namespace GateNetworkDotNet.GateTypes
         {
             get
             {
-                return outputPlugNames.Count;
+                return outputPlugsNames.Count;
             }
         }
 
@@ -109,92 +87,97 @@ namespace GateNetworkDotNet.GateTypes
         /// </summary>
         /// 
         /// <param name="name">The name of the gate type.</param>
-        /// <param name="inputPlugNames">The names of the input plugs.</param>
-        /// <param name="outputPlugNames">The names of the output plugs.</param>
+        /// <param name="inputPlugsNames">The names of the input plugs.</param>
+        /// <param name="outputPlugsNames">The names of the output plugs.</param>
         /// 
         /// <exception cref="GateNetworkDorNet.Exceptions.IllegalNameException">
         /// Condition 1: <c>name</c> is an illegal name.
-        /// Condition 2: <c>inputPlugNames</c> contains an illegal name.
-        /// Condition 3: <c>outputPlugNames</c> contains an illegal name.
+        /// Condition 2: <c>inputPlugsNames</c> contains an illegal name.
+        /// Condition 3: <c>outputPlugsNames</c> contains an illegal name.
         /// </exception>
         /// <exception cref="System.ArgumentNullException">
-        /// Condition 1: <c>inputPlugNames</c> is <c>null</c>.
-        /// Condition 2: <c>outputPlugNames</c> is <c>null</c>.
+        /// Condition 1: <c>inputPlugsNames</c> is <c>null</c>.
+        /// Condition 2: <c>outputPlugsNames</c> is <c>null</c>.
         /// </exception>
         /// <exception cref="System.ArgumentException">
-        /// Consition 1: <c>inputPlugNames</c> contains less than zero plug name. 
-        /// Condition 2: <c>outputPlugNames</c> contains less than one plug name. 
+        /// Condition: <c>outputPlugsNames</c> is empty.
         /// </exception>
-        protected GateType( string name, List< string > inputPlugNames, List< string > outputPlugNames )
+        protected GateType( string name, List< string > inputPlugsNames, List< string > outputPlugsNames )
         {
             // Validate the name.
             // The name is valid if it is a legal name.
-            if (!Program.IsLegalIdentifier( name ))
+            if (!IsLegalIdentifier( name ))
             {
                 throw new IllegalIdentifierException( name );
             }
             this.name = name;
 
             // Validate the names of the input plugs.
-            if (inputPlugNames == null)
+            if (inputPlugsNames == null)
             {
-                throw new ArgumentNullException( "inputPlugNames" );
+                throw new ArgumentNullException( "inputPlugsNames" );
             }
-            if (inputPlugNames.Count < 0)
+            foreach (string inputPlugName in inputPlugsNames)
             {
-                throw new ArgumentException( "inputPlugNames" );
-            }
-            foreach (string inputPlugName in inputPlugNames)
-            {
-                if (!Program.IsLegalIdentifier( inputPlugName ))
+                if (!IsLegalIdentifier( inputPlugName ))
                 {
                     throw new IllegalIdentifierException( inputPlugName );
                 }
             }
-            this.inputPlugNames = inputPlugNames;
+            this.inputPlugsNames = inputPlugsNames;
 
             // Validate the names of the output plugs.
-            if (outputPlugNames == null)
+            if (outputPlugsNames == null)
             {
-                throw new ArgumentNullException( "outputPlugNames" );
+                throw new ArgumentNullException( "outputPlugsNames" );
             }
-            if (outputPlugNames.Count < 1)
+            if (outputPlugsNames.Count < 1)
             {
-                throw new ArgumentException( "outputPlugNames" );
+                throw new ArgumentException( "outputPlugsNames" );
             }
-            foreach (string outputPlugName in outputPlugNames)
+            foreach (string outputPlugName in outputPlugsNames)
             {
-                if (!Program.IsLegalIdentifier( outputPlugName ))
+                if (!IsLegalIdentifier( outputPlugName ))
                 {
                     throw new IllegalIdentifierException( outputPlugName );
                 }
             }
-            this.outputPlugNames = outputPlugNames;
+            this.outputPlugsNames = outputPlugsNames;
         }
 
         #endregion // Protected instance constructors
 
+        #region Public static methods
+
+        /// <summary>
+        /// Determines whether an identifier is legal.
+        /// </summary>
+        /// 
+        /// <param name="name">The identifier (i.e. name of a gate type, gate instance, gate input or output, network).</param>
+        /// 
+        /// <returns>
+        /// <c>True</c> if the identifier is legal, <c>false</c> otherwise.
+        /// </returns>
+        public static bool IsLegalIdentifier( string identifier )
+        {
+            string legalIdentifierPattern = @"^.*$";
+            Regex legalIdentifierRegex = new Regex( legalIdentifierPattern );
+
+            return legalIdentifierRegex.IsMatch( identifier );
+        }
+
+        #endregion // Public static methods
+
         #region Public instance mehods
 
         /// <summary>
-        /// Instantiates the (abstract) gate object.
+        /// Evaluates the transition function of the gate type.
         /// </summary>
         /// 
-        /// <param name="name">The name of the (abstract) gate object.</param>
+        /// <param name="inputs">The inputs.</param>
         /// 
         /// <returns>
-        /// The (abstract) gate object.
-        /// </returns>
-        public abstract Gate Instantiate( string name );
-
-        /// <summary>
-        /// Evaluates the transition function of the abstract gate type.
-        /// </summary>
-        /// 
-        /// <param name="inputPlugValues">The values of the input plugs.</param>
-        /// 
-        /// <returns>
-        /// The values of the output plugs.
+        /// The outputs.
         /// </returns>
         public abstract string[] Evaluate( string[] inputs );
 

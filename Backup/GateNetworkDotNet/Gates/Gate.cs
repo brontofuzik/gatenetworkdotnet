@@ -28,12 +28,12 @@ namespace GateNetworkDotNet.Gates
         /// <summary>
         /// The input plugs.
         /// </summary>
-        private Plug[] inputPlugs;
+        private InputPlug[] inputPlugs;
 
         /// <summary>
         /// The output plugs.
         /// </summary>
-        private Plug[] outputPlugs;
+        private OutputPlug[] outputPlugs;
 
         #endregion // Private instance fields
 
@@ -69,7 +69,7 @@ namespace GateNetworkDotNet.Gates
             }
         }
 
-        public Plug[] InputPlugs
+        public InputPlug[] InputPlugs
         {
             get
             {
@@ -92,7 +92,7 @@ namespace GateNetworkDotNet.Gates
             }
         }
 
-        public Plug[] OutputPlugs
+        public OutputPlug[] OutputPlugs
         {
             get
             {
@@ -135,7 +135,7 @@ namespace GateNetworkDotNet.Gates
         protected Gate( string name, GateType type )
         {
             // Validate the name.
-            if (!Program.IsLegalIdentifier( name ))
+            if (!GateType.IsLegalIdentifier( name ))
             {
                 throw new IllegalIdentifierException( name );
             }
@@ -149,17 +149,17 @@ namespace GateNetworkDotNet.Gates
             this.type = type;
 
             // Create the input plugs.
-            inputPlugs = new Plug[ InputPlugCount ];
+            inputPlugs = new InputPlug[ InputPlugCount ];
             for (int i = 0; i < InputPlugCount; i++)
             {
-                inputPlugs[ i ] = new Plug();
+                inputPlugs[ i ] = new InputPlug();
             }
 
             // Create the output plugs.
-            outputPlugs = new Plug[ OutputPlugCount ];
+            outputPlugs = new OutputPlug[ OutputPlugCount ];
             for (int i = 0; i < OutputPlugCount; i++)
             {
-                outputPlugs[ i ] = new Plug();
+                outputPlugs[ i ] = new OutputPlug();
             }
         }
 
