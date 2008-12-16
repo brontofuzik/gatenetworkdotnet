@@ -30,22 +30,6 @@ namespace GateNetworkDotNet.Gates
         public BasicGate( string name, BasicGateType type )
             : base( name, type )
         {
-            //
-            // Initialize the output plugs.
-            //
-            if (InputPlugCount == 0)
-            {
-                // Use the transition function to initialize the output plugs.
-                Evaluate();
-            }
-            else
-            {
-                // Use the undefined value ("?") to initilize the output plugs.
-                for (int i = 0; i < OutputPlugCount; i++)
-                {
-                    OutputPlugs[ i ].Value = "?";
-                }
-            }
         }
 
         #endregion // Public instance constructors

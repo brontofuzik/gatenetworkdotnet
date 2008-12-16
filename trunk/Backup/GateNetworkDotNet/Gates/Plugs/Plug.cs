@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 
-using GateNetworkDotNet.Gates.Connections;
+using GateNetworkDotNet.Gates.Connections
 
 namespace GateNetworkDotNet.Gates.Plugs
 {
     /// <summary>
-    /// An plug.
+    /// An abstract plug.
     /// </summary>
-    public class Plug
+    public abstract class Plug
         : IPlug
     {
         #region Private insatance fields
