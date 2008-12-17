@@ -134,7 +134,7 @@ namespace GateNetworkDotNet
                 name = "na";
                 type = "nand";
                 gateType = gateTypes[ type ];
-                //compositeGate = (CompositeGate)gateType.Instantiate( name );
+                compositeGate = (CompositeGate)gateType.Instantiate( name );
                 //compositeGate.InputPlugs[ 0 ].Value = "1";
                 //compositeGate.InputPlugs[ 1 ].Value = "1";
                 //compositeGate.Evaluate();

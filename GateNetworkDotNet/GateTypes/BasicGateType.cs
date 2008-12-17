@@ -4,6 +4,7 @@ using System.Text;
 
 using GateNetworkDotNet.Exceptions;
 using GateNetworkDotNet.Gates;
+using GateNetworkDotNet.Gates.Plugs;
 
 namespace GateNetworkDotNet.GateTypes
 {
@@ -16,9 +17,9 @@ namespace GateNetworkDotNet.GateTypes
         #region Private instance fields
 
         /// <summary>
-        /// The transition function.
+        /// The transitions.
         /// </summary>
-        private TransitionFunction transitionFunction;
+        private Dictionary< string, string > transitions;
 
         #endregion // Private instance fields
 
@@ -60,6 +61,9 @@ namespace GateNetworkDotNet.GateTypes
         /// Condition 2: <c>inputPlugNames</c> contains an illegal name.
         /// Condition 3: <c>outputPlugNames</c> contains an illegal name.
         /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>transitions</c> is <c>null</c>.
+        /// </exception>
         /// <exception cref="System.ArgumentException">
         /// Consition 1: <c>inputPlugNames</c> contains less than zero plug name. 
         /// Condition 2: <c>outputPlugNames</c> contains less than one plug name. 
@@ -67,7 +71,44 @@ namespace GateNetworkDotNet.GateTypes
         public BasicGateType( string name, string inputPlugNames, string outputPlugNames, List< string > transitions )
             : base( name, inputPlugNames, outputPlugNames )
         {
-            transitionFunction = new TransitionFunction( InputPlugCount, OutputPlugCount, transitions );
+            //
+            // Validate and construct the transitions.
+            //
+            if (transitions == null)
+            {
+                throw new ArgumentNullException( "transitions" );
+            }
+
+            this.transitions = new Dictionary< string, string >();
+            foreach (string transition in transitions)
+            {
+                // Split the transition line.
+                string[] inputsAndOutputs = transition.Split( ' ' );
+
+                if (inputsAndOutputs.Length != TransitionLength)
+                {
+                    throw new IllegalTransitionException( transition );
+                }
+
+                // Build the inputs string.
+                StringBuilder inputsSB = new StringBuilder();
+                for (int i = 0; i < InputPlugCount; i++)
+                {
+                    inputsSB.Append( inputsAndOutputs[ i ] );
+                }
+                string inputsStr = inputsSB.ToString();
+
+                // Build the outputs string.
+                StringBuilder outputsSB = new StringBuilder();
+                for (int i = InputPlugCount; i < TransitionLength; i++)
+                {
+                    outputsSB.Append( inputsAndOutputs[ i ] );
+                }
+                string outputsStr = outputsSB.ToString();
+
+                // Add the (inputs, outputs) key-value-pair into the dictionary.
+                this.transitions.Add( inputsStr, outputsStr );
+            }
         }
 
         #endregion // Public instance constructors
@@ -89,17 +130,41 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// Evaluates the transition function of the basic gate type.
+        /// Evaluates the transition function of the abstract gate type.
         /// </summary>
-        /// 
-        /// <param name="inputPlugValues">The values of the input plugs.</param>
-        /// 
-        /// <returns>
-        /// The values of the output plugs.
-        /// </returns>
-        public override string[] Evaluate( string[] inputPlugValues )
+        /// <param name="inputPlugs">The input plugs.</param>
+        /// <param name="outputPlugs">The output plugs.</param>
+        public override void Evaluate( Plug[] inputPlugs, Plug[] outputPlugs )
         {
-            return transitionFunction.Evaluate( inputPlugValues );  
+            // Get the values of the input plugs.
+            StringBuilder inputPlugValuesSB = new StringBuilder();
+            for (int i = 0; i < InputPlugCount; i++)
+            {
+                inputPlugValuesSB.Append( inputPlugs[ i ].Value );
+            }
+            string inputPlugValues = inputPlugValuesSB.ToString();
+
+            // Get the outputs.
+            // TODO: Think about replacing the following piece of code with TryGetMethod.
+            string outputPlugValues;
+            try
+            {
+                // The transition function contains the mapping for the inputs.
+                outputPlugValues = transitions[ inputPlugValues ];
+            }
+            catch (KeyNotFoundException e)
+            {
+                // The transition fucntion does not contain the mapping for the inputs, hence implicit mapping is used.
+                outputPlugValues = (inputPlugValues.Contains( "?" )) ?
+                    new String( '?', OutputPlugCount ) :
+                    new String( '0', OutputPlugCount );
+            }
+
+            // Set the values of the output plugs.
+            for (int i = 0; i < OutputPlugCount; i++)
+            {
+                outputPlugs[ i ].Value = outputPlugValues.Substring( i, 1 );
+            }
         }
         #endregion // Public instance methods
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 using GateNetworkDotNet.Exceptions;
 using GateNetworkDotNet.Gates;
+using GateNetworkDotNet.Gates.Plugs;
 
 namespace GateNetworkDotNet.GateTypes
 {
@@ -170,6 +171,48 @@ namespace GateNetworkDotNet.GateTypes
         #region Public instance mehods
 
         /// <summary>
+        /// Gets the index of an input plug specified by its name.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the input plug.</param>
+        /// 
+        /// <returns>
+        /// The index of the input plug.
+        /// </returns>
+        public int GetInputPlugIndex( string name )
+        {
+            for (int i = 0; i < InputPlugCount; i++)
+            {
+                if (inputPlugNames[ i ].Equals( name ))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        /// <summary>
+        /// Gets the index of an output plug specified by its name.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the output plug.</param>
+        /// 
+        /// <returns>
+        /// The index of the output plug.
+        /// </returns>
+        public int GetOutputPlugIndex( string name )
+        {
+            for (int i = 0; i < OutputPlugCount; i++)
+            {
+                if (OutputPlugNames[ i ].Equals( name ))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+        /// <summary>
         /// Instantiates the (abstract) gate object.
         /// </summary>
         /// 
@@ -183,13 +226,9 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// Evaluates the transition function of the abstract gate type.
         /// </summary>
-        /// 
-        /// <param name="inputPlugValues">The values of the input plugs.</param>
-        /// 
-        /// <returns>
-        /// The values of the output plugs.
-        /// </returns>
-        public abstract string[] Evaluate( string[] inputs );
+        /// <param name="inputPlugs">The input plugs.</param>
+        /// <param name="outputPlugs">The output plugs.</param>
+        public abstract void Evaluate( Plug[] inputPlugs, Plug[] outputPlugs );
 
         #endregion // Public instance methods
     }
