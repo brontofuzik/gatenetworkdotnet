@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using GateNetworkDotNet.Exceptions;
 using GateNetworkDotNet.Gates;
 using GateNetworkDotNet.Gates.Connections;
+using GateNetworkDotNet.Gates.Plugs;
 
 namespace GateNetworkDotNet.GateTypes
 {
@@ -187,15 +188,11 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// Evaluates the transition function of the composite gate type.
+        /// Evaluates the transition function of the abstract gate type.
         /// </summary>
-        /// 
-        /// <param name="inputPlugValues">The values of the input plugs.</param>
-        /// 
-        /// <returns>
-        /// The values of the output plugs.
-        /// </returns>
-        public override string[] Evaluate( string[] inputPlugValues )
+        /// <param name="inputPlugs">The input plugs.</param>
+        /// <param name="outputPlugs">The output plugs.</param>
+        public override void Evaluate( Plug[] inputPlugs, Plug[] outputPlugs )
         {
             throw new NotImplementedException();
         }

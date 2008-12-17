@@ -53,26 +53,11 @@ namespace GateNetworkDotNet.Gates
         #region Public instance methods
 
         /// <summary>
-        /// Evaluates the transition function of the gate.
+        /// Evaluates the transition fucntion of the gate.
         /// </summary>
         public override void Evaluate()
         {
-            // Get the inpuuts from the input plugs.
-            string[] inputPlugValues = new string[ InputPlugCount ];
-
-            for (int i = 0; i < InputPlugCount; i++)
-            {
-                inputPlugValues[ i ] = InputPlugs[ i ].Value;
-            }
-
-            // Evaluate the transition function.
-            string[] outputPlugValues = Type.Evaluate( inputPlugValues );
-
-            // Set the outputs to the output plugs.
-            for (int i = 0; i < OutputPlugCount; i++)
-            {
-                OutputPlugs[ i ].Value = outputPlugValues[ i ];
-            }
+            Type.Evaluate( InputPlugs, OutputPlugs );
         }
 
         #endregion // Public instance methods

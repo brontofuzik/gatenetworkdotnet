@@ -168,6 +168,36 @@ namespace GateNetworkDotNet.Gates
         #region Public instance methods
 
         /// <summary>
+        /// Gets an input plug specified by its name.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the input plug.</param>
+        /// 
+        /// <returns>
+        /// The input plug.
+        /// </returns>
+        public Plug GetInputPlugByName( string name )
+        {
+            int inputPlugIndex = Type.GetInputPlugIndex( name );
+            return (inputPlugIndex != -1) ? InputPlugs[ inputPlugIndex ] : null;
+        }
+
+        /// <summary>
+        /// Gets an output plug specified by its name.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the output plug.</param>
+        /// 
+        /// <returns>
+        /// The output plug.
+        /// </returns>
+        public Plug GetOutputPlugByName( string name )
+        {
+            int outputPlugIndex = Type.GetOutputPlugIndex( name );
+            return (outputPlugIndex != -1) ? OutputPlugs[ outputPlugIndex ] : null;
+        }
+
+        /// <summary>
         /// Evaluates the transition fucntion of the gate.
         /// </summary>
         public abstract void Evaluate();

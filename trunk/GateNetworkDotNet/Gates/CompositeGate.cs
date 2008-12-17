@@ -129,35 +129,47 @@ namespace GateNetworkDotNet.Gates
             int connectionIndex = 0;
             foreach (KeyValuePair< string, string > kvp in (Type as CompositeGateType).Connections)
             {
+                //
                 // Get the target plug.
+                //
                 string connectionTarget = kvp.Key;
-                string[] targetPlugPath = connectionTarget.Split( '.' );
-                Plug targetPlug;
-                if (targetPlugPath.Length == 1)
-                {
-                    // The target plug is one of this gate's output plugs.
-                    targetPlug;
-                }
-                else
-                {
-                    // The target plug is one of the nested gates' input plugs.
-                    targetPlug;
-                }
-
+                string[] targetPlugName = connectionTarget.Split( '.' );
+                bool nestedTargetPlug = (targetPlugName.Length != 1);
+                
+                // Depending on whether the target plug is a nested plug, the target gate is ...
+                Gate targetGate = nestedTargetPlug ?
+                    // ... a nested gate.
+                    nestedGates[ targetPlugName[ 0 ] ] :
+                    // ... this composite gate.
+                    this;
+                
+                // Depending on whether the target plug is a nested plug, the target plug is ...
+                Plug targetPlug = nestedTargetPlug ?
+                    // ... an input plug of a nested gate.
+                    targetGate.GetInputPlugByName( targetPlugName[ 1 ] ) :
+                    // ... an output plug of this composite gate.
+                    targetGate.GetOutputPlugByName( targetPlugName[ 0 ] );
+                    
+                //
                 // Get the source plug.
+                //
                 string connectionSource = kvp.Value;
-                string[] sourcePlugPath = connectionSource.Split( '.' );
-                Plug sourcePlug;
-                if (sourcePlugPath.Length == 1)
-                {
-                    // The source plug is one of this gate's input plugs.
-                    sourcePlug;
-                }
-                else
-                {
-                    // The source plug is one of the nested gates' output plugs.
-                    sourcePlug;
-                }
+                string[] sourcePlugName = connectionSource.Split( '.' );
+                bool nestedSourcePlug = (sourcePlugName.Length != 1);
+
+                // Depending on whether the source plug is a nested plug, the source gate is ...
+                Gate sourceGate = nestedSourcePlug ?
+                    // ... a nested gate.
+                    nestedGates[ sourcePlugName[ 0 ] ] :
+                    // ... this composite gate.
+                    this;
+
+                // Depending on whether the source plug is a nested plug, the source plug is ...
+                Plug sourcePlug = nestedSourcePlug ?
+                    // ... an output plug of a nested gate.
+                    sourceGate.GetOutputPlugByName( sourcePlugName[ 1 ] ) :
+                    // ... an input plug of this composite gate.
+                    sourceGate.GetInputPlugByName( sourcePlugName[ 0 ] );
 
                 // Construct the connection.
                 Connection connection = new Connection();
@@ -177,7 +189,7 @@ namespace GateNetworkDotNet.Gates
         /// </summary>
         public override void Evaluate()
         {
-            throw new System.NotImplementedException();
+            Type.Evaluate( InputPlugs, OutputPlugs );
         }
 
         #endregion // Public instance methods
