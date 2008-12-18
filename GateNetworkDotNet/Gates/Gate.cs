@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 using GateNetworkDotNet.Exceptions;
 using GateNetworkDotNet.Gates.Plugs;
@@ -21,7 +22,7 @@ namespace GateNetworkDotNet.Gates
         private string name;
 
         /// <summary>
-        /// The type of the gate.
+        /// The type of the (abstract) gate.
         /// </summary>
         private GateType type;
 
@@ -55,20 +56,12 @@ namespace GateNetworkDotNet.Gates
         }
 
         /// <summary>
-        /// Gets the type of the gate.
+        /// Gets the input plugs.
         /// </summary>
         /// 
         /// <value>
-        /// The type of the gate.
+        /// The input plugs.
         /// </value>
-        public GateType Type
-        {
-            get
-            {
-                return type;
-            }
-        }
-
         public Plug[] InputPlugs
         {
             get
@@ -78,7 +71,7 @@ namespace GateNetworkDotNet.Gates
         }
 
         /// <summary>
-        /// The number of the input plugs.
+        /// Gets the number of the input plugs.
         /// </summary>
         /// 
         /// <value>
@@ -92,6 +85,32 @@ namespace GateNetworkDotNet.Gates
             }
         }
 
+        /// <summary>
+        /// Sets the values of the input plugs. 
+        /// </summary>
+        /// 
+        /// <value>
+        /// The values of the input plugs.
+        /// </value>
+        public string InputPlugValues
+        {
+            set
+            {
+                string[] inputPlugValues = value.Split( ' ' );
+                for (int i = 0; i < InputPlugCount; i++)
+                {
+                    inputPlugs[ i ].Value = inputPlugValues[ i ];
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the output plugs.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The output plugs.
+        /// </value>
         public Plug[] OutputPlugs
         {
             get
@@ -112,6 +131,31 @@ namespace GateNetworkDotNet.Gates
             get
             {
                 return type.OutputPlugCount;
+            }
+        }
+
+        /// <summary>
+        /// Gets the values of the output plugs.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The values of the output plugs.
+        /// </value>
+        public string OutputPlugValues
+        {
+            get
+            {
+                StringBuilder outputPlugValues = new StringBuilder();
+                for (int i = 0; i < OutputPlugCount; i++)
+                {
+                    outputPlugValues.Append( outputPlugs[ i ].Value + " " );
+                }
+                // Remove the trailing space character if necessary.
+                if (outputPlugValues.Length != 0)
+                {
+                    outputPlugValues.Remove( outputPlugValues.Length - 1, 1 );
+                }
+                return outputPlugValues.ToString();
             }
         }
 
@@ -141,10 +185,10 @@ namespace GateNetworkDotNet.Gates
             }
             this.name = name;
 
-            // Validate the type.
+            // Validate the (abstract) gate type.
             if (type == null)
             {
-                throw new ArgumentNullException( "type" );
+                throw new ArgumentNullException();
             }
             this.type = type;
 
@@ -152,14 +196,14 @@ namespace GateNetworkDotNet.Gates
             inputPlugs = new Plug[ InputPlugCount ];
             for (int i = 0; i < InputPlugCount; i++)
             {
-                inputPlugs[ i ] = new Plug();
+                inputPlugs[ i ] = new Plug( this );
             }
 
             // Create the output plugs.
             outputPlugs = new Plug[ OutputPlugCount ];
             for (int i = 0; i < OutputPlugCount; i++)
             {
-                outputPlugs[ i ] = new Plug();
+                outputPlugs[ i ] = new Plug( this );
             }
         }
 
@@ -178,7 +222,7 @@ namespace GateNetworkDotNet.Gates
         /// </returns>
         public Plug GetInputPlugByName( string name )
         {
-            int inputPlugIndex = Type.GetInputPlugIndex( name );
+            int inputPlugIndex = type.GetInputPlugIndex( name );
             return (inputPlugIndex != -1) ? InputPlugs[ inputPlugIndex ] : null;
         }
 
@@ -193,12 +237,17 @@ namespace GateNetworkDotNet.Gates
         /// </returns>
         public Plug GetOutputPlugByName( string name )
         {
-            int outputPlugIndex = Type.GetOutputPlugIndex( name );
+            int outputPlugIndex = type.GetOutputPlugIndex( name );
             return (outputPlugIndex != -1) ? OutputPlugs[ outputPlugIndex ] : null;
         }
 
         /// <summary>
-        /// Evaluates the transition fucntion of the gate.
+        /// Initializes the (abstract) gate.
+        /// </summary>
+        public abstract void Initialize();
+
+        /// <summary>
+        /// Evaluates the (abstract) gate.
         /// </summary>
         public abstract void Evaluate();
 

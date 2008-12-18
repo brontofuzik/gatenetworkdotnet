@@ -50,13 +50,29 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// 
+        /// Gets or sets the names of the input plugs.
         /// </summary>
+        /// 
+        /// <value>
+        /// The names of the input plugs.
+        /// </value>
         public string[] InputPlugNames
         {
             get
             {
                 return inputPlugNames;
+            }
+            set
+            {
+                // Validate the names of the input plugs.
+                foreach (string inputPlugName in value)
+                {
+                    if (!Program.IsLegalIdentifier( inputPlugName ))
+                    {
+                        throw new ArgumentException( "value" );
+                    }
+                }
+                inputPlugNames = value;
             }
         }
 
@@ -76,13 +92,33 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// 
+        /// Gets or sets the names of the output plugs.
         /// </summary>
+        /// 
+        /// <value>
+        /// The names of the output plugs.
+        /// </value>
         public string[] OutputPlugNames
         {
             get
             {
                 return outputPlugNames;
+            }
+            set
+            {
+                // Validate the names of the output plugs.
+                if (value.Length < 1)
+                {
+                    throw new ArgumentException( "value" );
+                }
+                foreach (string outputPlugName in value)
+                {
+                    if (!Program.IsLegalIdentifier( outputPlugName ))
+                    {
+                        throw new ArgumentException( "value" );
+                    }
+                }
+                outputPlugNames = value;
             }
         }
 
@@ -106,64 +142,22 @@ namespace GateNetworkDotNet.GateTypes
         #region Protected instance constructors
 
         /// <summary>
-        /// Creates a new gate type.
+        /// Creates a new (abstract) gate type.
         /// </summary>
         /// 
-        /// <param name="name">The name of the gate type.</param>
-        /// <param name="inputPlugNames">The names of the input plugs.</param>
-        /// <param name="outputPlugNames">The names of the output plugs.</param>
-        /// 
-        /// <exception cref="GateNetworkDorNet.Exceptions.IllegalNameException">
-        /// Condition 1: <c>name</c> is an illegal name.
-        /// Condition 2: <c>inputPlugNames</c> contains an illegal name.
-        /// Condition 3: <c>outputPlugNames</c> contains an illegal name.
-        /// </exception>
+        /// <param name="name">The name of the (abstract) gate type.</param>
+        ///
         /// <exception cref="System.ArgumentException">
-        /// Consition 1: <c>inputPlugNames</c> contains less than zero plug name. 
-        /// Condition 2: <c>outputPlugNames</c> contains less than one plug name. 
+        /// Condition: <c>name</c> is not a legal identifier.
         /// </exception>
-        protected GateType( string name, string inputPlugNames, string outputPlugNames )
+        public GateType( string name )
         {
-            //
             // Validate the name.
-            //
             if (!Program.IsLegalIdentifier( name ))
             {
-                throw new IllegalIdentifierException( name );
+                throw new ArgumentException( "name" );
             }
             this.name = name;
-
-            //
-            // Validate the names of the input plugs.
-            //
-            this.inputPlugNames = (inputPlugNames.Length > 0) ? inputPlugNames.Split( ' ' ) : new string[ 0 ];
-            if (InputPlugCount < 0)
-            {
-                throw new ArgumentException( "inputPlugNames" );
-            }
-            foreach (string inputPlugName in this.inputPlugNames)
-            {
-                if (!Program.IsLegalIdentifier( inputPlugName ))
-                {
-                    throw new IllegalIdentifierException( inputPlugName );
-                }
-            }
-
-            //
-            // Validate the names of the output plugs.
-            //
-            this.outputPlugNames = (outputPlugNames.Length > 0) ? outputPlugNames.Split( ' ' ) : new string[ 0 ];
-            if (OutputPlugCount < 1)
-            {
-                throw new ArgumentException( "outputPlugNames" );
-            }
-            foreach (string outputPlugName in this.outputPlugNames)
-            {
-                if (!Program.IsLegalIdentifier( outputPlugName ))
-                {
-                    throw new IllegalIdentifierException( outputPlugName );
-                }
-            }
         }
 
         #endregion // Protected instance constructors
@@ -222,13 +216,6 @@ namespace GateNetworkDotNet.GateTypes
         /// The (abstract) gate object.
         /// </returns>
         public abstract Gate Instantiate( string name );
-
-        /// <summary>
-        /// Evaluates the transition function of the abstract gate type.
-        /// </summary>
-        /// <param name="inputPlugs">The input plugs.</param>
-        /// <param name="outputPlugs">The output plugs.</param>
-        public abstract void Evaluate( Plug[] inputPlugs, Plug[] outputPlugs );
 
         #endregion // Public instance methods
     }

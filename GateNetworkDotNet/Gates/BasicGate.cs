@@ -12,6 +12,43 @@ namespace GateNetworkDotNet.Gates
     class BasicGate
         : Gate
     {
+        #region Private instance fields
+
+        /// <summary>
+        /// The type of the basic gate.
+        /// </summary>
+        private BasicGateType type;
+
+        /// <summary>
+        /// Is the basic gate evaluated.
+        /// </summary>
+        private bool isEvaluated;
+        
+        #endregion // Private instance fields
+
+        #region Public instance properties
+
+        /// <summary>
+        /// Determines whether the basic gate is evaluated.
+        /// </summary>
+        /// 
+        /// <value>
+        /// <c>True</c> if the basic gate is evaluated, <c>false</c> otherwise.
+        /// </value>
+        public bool IsEvaluated
+        {
+            get
+            {
+                return isEvaluated;
+            }
+            set
+            {
+                isEvaluated = value;
+            }
+        }
+
+        #endregion // Public instance properties
+
         #region Public instance contructors
 
         /// <summary>
@@ -30,22 +67,15 @@ namespace GateNetworkDotNet.Gates
         public BasicGate( string name, BasicGateType type )
             : base( name, type )
         {
-            //
-            // Initialize the output plugs.
-            //
-            if (InputPlugCount == 0)
+            // Validate the basic gate type.
+            if (type == null)
             {
-                // Use the transition function to initialize the output plugs.
-                Evaluate();
+                throw new ArgumentNullException( "type" );
             }
-            else
-            {
-                // Use the undefined value ("?") to initilize the output plugs.
-                for (int i = 0; i < OutputPlugCount; i++)
-                {
-                    OutputPlugs[ i ].Value = "?";
-                }
-            }
+            this.type = type;
+
+            // The newly created basic gate is not evaluated.
+            isEvaluated = false;
         }
 
         #endregion // Public instance constructors
@@ -53,11 +83,33 @@ namespace GateNetworkDotNet.Gates
         #region Public instance methods
 
         /// <summary>
-        /// Evaluates the transition fucntion of the gate.
+        /// Initializes the basic gate.
+        /// </summary>
+        public override void Initialize()
+        {
+            if (InputPlugCount == 0)
+            {
+                Evaluate();
+            }
+            else
+            {
+                foreach (Plug outputPlug in OutputPlugs)
+                {
+                    outputPlug.Value = "?";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the basic gate.
         /// </summary>
         public override void Evaluate()
         {
-            Type.Evaluate( InputPlugs, OutputPlugs );
+            if (!isEvaluated)
+            {
+                type.Evaluate( InputPlugs, OutputPlugs );
+                isEvaluated = true;
+            }
         }
 
         #endregion // Public instance methods

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using GateNetworkDotNet.GateTypes;
 using GateNetworkDotNet.Gates.Connections;
@@ -6,10 +7,15 @@ using GateNetworkDotNet.Gates.Plugs;
 
 namespace GateNetworkDotNet.Gates
 {
-    class CompositeGate
+    public class CompositeGate
         : Gate
     {
         #region Private instance fields
+
+        /// <summary>
+        /// The type of the composite gate.
+        /// </summary>
+        private CompositeGateType type;
 
         /// <summary>
         /// The nested gates.
@@ -51,7 +57,7 @@ namespace GateNetworkDotNet.Gates
         {
             get
             {
-                return (Type as CompositeGateType).NestedGateCount;
+                return type.NestedGateCount;
             }
         }
 
@@ -81,7 +87,7 @@ namespace GateNetworkDotNet.Gates
         {
             get
             {
-                return (Type as CompositeGateType).ConnectionCount;
+                return type.ConnectionCount;
             }
         }
 
@@ -105,15 +111,18 @@ namespace GateNetworkDotNet.Gates
         public CompositeGate( string name, CompositeGateType type )
             : base( name, type )
         {
-            //
-            // Initialize the output plugs.
-            // TODO: Provide implementation.
-            
+            // Validate the composite gate type.
+            if (type == null)
+            {
+                throw new ArgumentNullException();
+            }
+            this.type = type;
+
             //
             // Construct the nested gates.
             //
             nestedGates = new Dictionary< string, Gate >();
-            foreach (KeyValuePair< string, GateType > kvp in (Type as CompositeGateType).NestedGateTypes)
+            foreach (KeyValuePair< string, GateType > kvp in type.NestedGateTypes)
             {
                 string nestedGateName = kvp.Key;
                 GateType nestedGateType = kvp.Value;
@@ -127,7 +136,7 @@ namespace GateNetworkDotNet.Gates
             //
             connections = new Connection[ ConnectionCount ];
             int connectionIndex = 0;
-            foreach (KeyValuePair< string, string > kvp in (Type as CompositeGateType).Connections)
+            foreach (KeyValuePair< string, string > kvp in type.Connections)
             {
                 //
                 // Get the target plug.
@@ -176,7 +185,11 @@ namespace GateNetworkDotNet.Gates
                 sourcePlug.PlugTargetConnection( connection );
                 targetPlug.PlugSourceConnection( connection );
 
-                connections[ connectionIndex++ ] = connection; 
+                connections[ connectionIndex++ ] = connection;
+
+                // Initialize the implicit input plugs.
+                GetInputPlugByName("0").Value = "0";
+                GetInputPlugByName("1").Value = "1";
             }
         }
 
@@ -185,11 +198,28 @@ namespace GateNetworkDotNet.Gates
         #region Public instance methods
 
         /// <summary>
-        /// Evaluates the transition function of the gate.
+        /// Initializes the composite gate.
+        /// </summary>
+        public override void Initialize()
+        {
+            // Initialize the nested gates.
+            foreach (KeyValuePair< string, Gate > kvp in nestedGates)
+            {
+                Gate nestedGate = kvp.Value;
+                nestedGate.Initialize();
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the composite gate.
         /// </summary>
         public override void Evaluate()
         {
-            Type.Evaluate( InputPlugs, OutputPlugs );
+            foreach (KeyValuePair< string, Gate > kvp in nestedGates)
+            {
+                Gate nestedGate = kvp.Value;
+                nestedGate.Evaluate();
+            }
         }
 
         #endregion // Public instance methods
