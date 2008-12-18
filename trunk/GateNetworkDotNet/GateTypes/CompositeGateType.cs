@@ -15,6 +15,15 @@ namespace GateNetworkDotNet.GateTypes
     public class CompositeGateType
         : GateType
     {
+        #region Private static fields
+
+        /// <summary>
+        /// The names of the implicit input plugs.
+        /// </summary>
+        private static string implicitInputPlugNames = "0 1";
+
+        #endregion // Private static fields
+
         #region Private instance fields
 
         /// <summary>
@@ -90,7 +99,7 @@ namespace GateNetworkDotNet.GateTypes
         /// <param name="outputPlugNames">The names of the output plugs.</param>
         /// <param name="nestedGates">The nested gates.</param>
         /// <param name="connections">The connections.</param>
-        /// <param name="gateTypes">The dictionary of known gate types.</param>
+        /// <param name="gateTypes">The known types of gates.</param>
         /// 
         /// <exception cref="GateNetworkDorNet.Exceptions.IllegalNameException">
         /// Condition 1: <c>name</c> is an illegal name.
@@ -101,12 +110,22 @@ namespace GateNetworkDotNet.GateTypes
         /// Consition 1: <c>inputPlugNames</c> contains less than zero plug name. 
         /// Condition 2: <c>outputPlugNames</c> contains less than one plug name. 
         /// </exception>
-        public CompositeGateType(string name, string inputPlugNames, string outputPlugNames, List< string > nestedGates, List< string > connections, Dictionary< string, GateType > gateTypes )
-            : base( name, inputPlugNames, outputPlugNames )
+        public CompositeGateType( string name, string inputPlugNames, string outputPlugNames, List< string > nestedGates, List< string > connections, Dictionary< string, GateType > gateTypes )
+            : base( name, inputPlugNames + " " + implicitInputPlugNames, outputPlugNames )
         {
             //
             // Validate and construct the nested gates.
             //
+            if (nestedGates == null)
+            {
+                throw new ArgumentNullException();
+            }
+            if (nestedGates.Count < 1)
+            {
+                // TODO: Provide more specific exception.
+                throw new ArgumentException();
+            }
+
             this.nestedGateTypes = new Dictionary< string, GateType >();
             foreach (string nestedGate in nestedGates)
             {
@@ -185,16 +204,6 @@ namespace GateNetworkDotNet.GateTypes
         public override Gate Instantiate( string name )
         {
             return new CompositeGate( name, this );
-        }
-
-        /// <summary>
-        /// Evaluates the transition function of the abstract gate type.
-        /// </summary>
-        /// <param name="inputPlugs">The input plugs.</param>
-        /// <param name="outputPlugs">The output plugs.</param>
-        public override void Evaluate( Plug[] inputPlugs, Plug[] outputPlugs )
-        {
-            throw new NotImplementedException();
         }
 
         #endregion // Public instance methods

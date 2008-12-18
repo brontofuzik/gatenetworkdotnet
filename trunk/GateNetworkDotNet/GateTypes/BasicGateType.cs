@@ -48,72 +48,55 @@ namespace GateNetworkDotNet.GateTypes
         /// Creates a new basic gate type.
         /// </summary>
         /// 
-        /// <param name="name">The name of the gate type.</param>
-        /// <param name="inputPlugNames">The names of the input plugs.</param>
-        /// <param name="outputs">The names of the output plugs.</param>
-        /// <param name="transitions">The transitions.</param>
-        /// 
-        /// <exception cref="GateNetworkDotNet.Exceptions.IllegalTransitionException">
-        /// Consition: the number of inputs and outputs is not equal to the length of the transition.
-        /// </exception>
-        /// <exception cref="GateNetworkDorNet.Exceptions.IllegalNameException">
-        /// Condition 1: <c>name</c> is an illegal name.
-        /// Condition 2: <c>inputPlugNames</c> contains an illegal name.
-        /// Condition 3: <c>outputPlugNames</c> contains an illegal name.
-        /// </exception>
-        /// <exception cref="System.ArgumentNullException">
-        /// Condition: <c>transitions</c> is <c>null</c>.
-        /// </exception>
+        /// <param name="name">The name of the basic gate type.</param>
+        ///
         /// <exception cref="System.ArgumentException">
-        /// Consition 1: <c>inputPlugNames</c> contains less than zero plug name. 
-        /// Condition 2: <c>outputPlugNames</c> contains less than one plug name. 
+        /// Condition: <c>name</c> is not a legal identifier.
         /// </exception>
-        public BasicGateType( string name, string inputPlugNames, string outputPlugNames, List< string > transitions )
-            : base( name, inputPlugNames, outputPlugNames )
+        public BasicGateType( string name )
+            : base ( name )
         {
-            //
-            // Validate and construct the transitions.
-            //
-            if (transitions == null)
-            {
-                throw new ArgumentNullException( "transitions" );
-            }
-
-            this.transitions = new Dictionary< string, string >();
-            foreach (string transition in transitions)
-            {
-                // Split the transition line.
-                string[] inputsAndOutputs = transition.Split( ' ' );
-
-                if (inputsAndOutputs.Length != TransitionLength)
-                {
-                    throw new IllegalTransitionException( transition );
-                }
-
-                // Build the inputs string.
-                StringBuilder inputsSB = new StringBuilder();
-                for (int i = 0; i < InputPlugCount; i++)
-                {
-                    inputsSB.Append( inputsAndOutputs[ i ] );
-                }
-                string inputsStr = inputsSB.ToString();
-
-                // Build the outputs string.
-                StringBuilder outputsSB = new StringBuilder();
-                for (int i = InputPlugCount; i < TransitionLength; i++)
-                {
-                    outputsSB.Append( inputsAndOutputs[ i ] );
-                }
-                string outputsStr = outputsSB.ToString();
-
-                // Add the (inputs, outputs) key-value-pair into the dictionary.
-                this.transitions.Add( inputsStr, outputsStr );
-            }
+            transitions = new Dictionary< string, string >();
         }
 
         #endregion // Public instance constructors
 
         #region Public instance methods
+
+        /// <summary>
+        /// Adds a transition to the transitions
+        /// </summary>
+        /// 
+        /// <param name="transition">The transition.</param>
+        public void AddTransition( string transition )
+        {
+            // Split the transition line.
+            string[] inputsAndOutputs = transition.Split( ' ' );
+
+            if (inputsAndOutputs.Length != TransitionLength)
+            {
+                throw new IllegalTransitionException( transition );
+            }
+
+            // Build the inputs string.
+            StringBuilder inputsSB = new StringBuilder();
+            for (int i = 0; i < InputPlugCount; i++)
+            {
+                inputsSB.Append( inputsAndOutputs[ i ] );
+            }
+            string inputs = inputsSB.ToString();
+
+            // Build the outputs string.
+            StringBuilder outputsSB = new StringBuilder();
+            for (int i = InputPlugCount; i < TransitionLength; i++)
+            {
+                outputsSB.Append( inputsAndOutputs[ i ] );
+            }
+            string outputs = outputsSB.ToString();
+
+            // Add the (inputs, outputs) key-value-pair into the dictionary.
+            transitions.Add( inputs, outputs );
+        }
 
         /// <summary>
         /// Instantiates the basic gate object.
@@ -134,7 +117,7 @@ namespace GateNetworkDotNet.GateTypes
         /// </summary>
         /// <param name="inputPlugs">The input plugs.</param>
         /// <param name="outputPlugs">The output plugs.</param>
-        public override void Evaluate( Plug[] inputPlugs, Plug[] outputPlugs )
+        public void Evaluate( Plug[] inputPlugs, Plug[] outputPlugs )
         {
             // Get the values of the input plugs.
             StringBuilder inputPlugValuesSB = new StringBuilder();

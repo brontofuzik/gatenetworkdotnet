@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 using GateNetworkDotNet.Gates.Connections;
 
@@ -27,6 +28,11 @@ namespace GateNetworkDotNet.Gates.Plugs
         /// </summary>
         private List< Connection > targetConnections;
 
+        /// <summary>
+        /// The parent gate of the plug.
+        /// </summary>
+        private Gate parentGate;
+
         #endregion // Private instance fields
 
         #region Public instance properties
@@ -46,7 +52,54 @@ namespace GateNetworkDotNet.Gates.Plugs
             }
             set
             {
-                this.value = value;
+                // If the new value of the plug is different from the old one, ...
+                if (this.value != value)
+                {
+                    // ... update the value of the plug, ...
+                    this.value = value;
+                    // ... and trasmit the new value through the target connections into the target plugs.
+                    foreach (Connection targetConnection in targetConnections)
+                    {
+                        targetConnection.Transmit();
+                    }
+
+                    // If the parent gate of the plug is a basic gate, ...
+                    if (parentGate is BasicGate)
+                    {
+                        // ... it needs to be re-evaluated.
+                        (parentGate as BasicGate).IsEvaluated = false;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of source connections plugged into the plug.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The number of source connections plugged into the plug.
+        /// </value>
+        public int SourceConnectionCount
+        {
+            get
+            {
+                return sourceConnections.Count;
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of target connections plugged into the plug.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The number of target connections plugged into the plug.
+        /// </value>
+        public int TargetConnectionCount
+        {
+            get
+            {
+                return targetConnections.Count;
             }
         }
 
@@ -57,10 +110,16 @@ namespace GateNetworkDotNet.Gates.Plugs
         /// <summary>
         /// Creates a new plug.
         /// </summary>
-        public Plug()
+        public Plug( Gate parentGate )
         {
             sourceConnections = new List< Connection >();
             targetConnections = new List< Connection >();
+
+            if (parentGate == null)
+            {
+                throw new ArgumentNullException();
+            }
+            this.parentGate = parentGate;
         }
 
         #endregion // Public instance constructors
@@ -74,6 +133,11 @@ namespace GateNetworkDotNet.Gates.Plugs
         /// <param name="connection">The source connection.</param>
         public void PlugSourceConnection( Connection connection )
         {
+            if (SourceConnectionCount == 1)
+            {
+                // TODO: Provide more specific exception.
+                throw new Exception();
+            }
             sourceConnections.Add( connection );
             connection.TargetPlug = this;
         }
@@ -83,7 +147,7 @@ namespace GateNetworkDotNet.Gates.Plugs
         /// </summary>
         /// 
         /// <param name="connection">The target connection.</param>
-        public void PlugTargetConnection( Connection connection )
+        public void PlugTargetConnection(Connection connection)
         {
             targetConnections.Add( connection );
             connection.SourcePlug = this;
