@@ -11,7 +11,6 @@ namespace GateNetworkDotNet.GateTypes
     /// An abstract gate type.
     /// </summary>
     public abstract class GateType
-       : IGateType
     {
         #region Private instance fields
 
@@ -50,7 +49,7 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// Gets or sets the names of the input plugs.
+        /// Gets the names of the input plugs.
         /// </summary>
         /// 
         /// <value>
@@ -61,18 +60,6 @@ namespace GateNetworkDotNet.GateTypes
             get
             {
                 return inputPlugNames;
-            }
-            set
-            {
-                // Validate the names of the input plugs.
-                foreach (string inputPlugName in value)
-                {
-                    if (!Program.IsLegalIdentifier( inputPlugName ))
-                    {
-                        throw new ArgumentException( "value" );
-                    }
-                }
-                inputPlugNames = value;
             }
         }
 
@@ -92,7 +79,7 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// Gets or sets the names of the output plugs.
+        /// Gets the names of the output plugs.
         /// </summary>
         /// 
         /// <value>
@@ -103,22 +90,6 @@ namespace GateNetworkDotNet.GateTypes
             get
             {
                 return outputPlugNames;
-            }
-            set
-            {
-                // Validate the names of the output plugs.
-                if (value.Length < 1)
-                {
-                    throw new ArgumentException( "value" );
-                }
-                foreach (string outputPlugName in value)
-                {
-                    if (!Program.IsLegalIdentifier( outputPlugName ))
-                    {
-                        throw new ArgumentException( "value" );
-                    }
-                }
-                outputPlugNames = value;
             }
         }
 
@@ -163,6 +134,71 @@ namespace GateNetworkDotNet.GateTypes
         #endregion // Protected instance constructors
 
         #region Public instance mehods
+
+        /// <summary>
+        /// Sets the names of the input plugs.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugNames">The names of the input plugs.</param>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>inputPlugNames</c> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="System.ArgumentException">
+        /// Condition: <c>inputPlugNames</c> contains an illegal input plug name.
+        /// </exception>
+        public void SetInputPlugNames( string[] inputPlugNames )
+        {
+            // Validate the names of the input plugs.
+            if (inputPlugNames == null)
+            {
+                throw new ArgumentNullException( "inputPlugNames" );
+            }
+            foreach (string inputPlugName in inputPlugNames)
+            {
+                if (!Program.IsLegalIdentifier( inputPlugName ))
+                {
+                    throw new ArgumentException( "inputPlugNames" );
+                }
+            }
+            this.inputPlugNames = inputPlugNames;
+        }
+
+        /// <summary>
+        /// Sets the names of the output plugs.
+        /// </summary>
+        /// 
+        /// <param name="outputPlugNames">The names of the output plugs.</param>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>outputPlugNames</c> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="System.ArgumentException">
+        /// Condition: <c>outputPlugNames</c> contains less than one output plug name.
+        /// </exception>
+        /// <exception cref="System.ArgumentException">
+        /// Condition: <c>outputPlugNames</c> contains an illegal output plug name.
+        /// </exception>
+        public void SetOutputPlugNames( string[] outputPlugNames )
+        {
+            // Validate the names of the output plugs.
+            if (outputPlugNames == null)
+            {
+                throw new ArgumentNullException( "outputPlugNames" );
+            }
+            if (outputPlugNames.Length < 1)
+            {
+                throw new ArgumentException( "outputPlugNames" );
+            }
+            foreach (string outputPlugName in outputPlugNames)
+            {
+                if (!Program.IsLegalIdentifier( outputPlugName ))
+                {
+                    throw new ArgumentException( "outputPlugNames" );
+                }
+            }
+            this.outputPlugNames = outputPlugNames;
+        }
 
         /// <summary>
         /// Gets the index of an input plug specified by its name.

@@ -88,7 +88,23 @@ namespace GateNetworkDotNet.GateTypes
 
         #endregion // Public instance properties
 
-        #region Public instance contructors
+        #region Public instance constructors
+
+        /// <summary>
+        /// Creates a new composite gate type.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the composite gate type.</param>
+        ///
+        /// <exception cref="System.ArgumentException">
+        /// Condition: <c>name</c> is not a legal identifier.
+        /// </exception>
+        public CompositeGateType( string name )
+            : base( name )
+        {
+            nestedGateTypes = new Dictionary< string, GateType >();
+            connections = new Dictionary< string, string >();
+        }
 
         /// <summary>
         /// Creates a new gate type.
@@ -188,7 +204,7 @@ namespace GateNetworkDotNet.GateTypes
             }
         }
 
-        #endregion // Public instance contructors
+        #endregion // Public instance constructors
 
         #region Public instance methods
 

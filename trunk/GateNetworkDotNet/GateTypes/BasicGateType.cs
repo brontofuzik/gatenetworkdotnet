@@ -54,7 +54,7 @@ namespace GateNetworkDotNet.GateTypes
         /// Condition: <c>name</c> is not a legal identifier.
         /// </exception>
         public BasicGateType( string name )
-            : base ( name )
+            : base( name )
         {
             transitions = new Dictionary< string, string >();
         }
