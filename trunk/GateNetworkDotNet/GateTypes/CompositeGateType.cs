@@ -106,107 +106,99 @@ namespace GateNetworkDotNet.GateTypes
             connections = new Dictionary< string, string >();
         }
 
-        /// <summary>
-        /// Creates a new gate type.
-        /// </summary>
-        /// 
-        /// <param name="name">The name of the gate type.</param>
-        /// <param name="inputPlugNames">The names of the input plugs.</param>
-        /// <param name="outputPlugNames">The names of the output plugs.</param>
-        /// <param name="nestedGates">The nested gates.</param>
-        /// <param name="connections">The connections.</param>
-        /// <param name="gateTypes">The known types of gates.</param>
-        /// 
-        /// <exception cref="GateNetworkDorNet.Exceptions.IllegalNameException">
-        /// Condition 1: <c>name</c> is an illegal name.
-        /// Condition 2: <c>inputPlugNames</c> contains an illegal name.
-        /// Condition 3: <c>outputPlugNames</c> contains an illegal name.
-        /// </exception>
-        /// <exception cref="System.ArgumentException">
-        /// Consition 1: <c>inputPlugNames</c> contains less than zero plug name. 
-        /// Condition 2: <c>outputPlugNames</c> contains less than one plug name. 
-        /// </exception>
-        public CompositeGateType( string name, string inputPlugNames, string outputPlugNames, List< string > nestedGates, List< string > connections, Dictionary< string, GateType > gateTypes )
-            : base( name, inputPlugNames + " " + implicitInputPlugNames, outputPlugNames )
-        {
-            //
-            // Validate and construct the nested gates.
-            //
-            if (nestedGates == null)
-            {
-                throw new ArgumentNullException();
-            }
-            if (nestedGates.Count < 1)
-            {
-                // TODO: Provide more specific exception.
-                throw new ArgumentException();
-            }
-
-            this.nestedGateTypes = new Dictionary< string, GateType >();
-            foreach (string nestedGate in nestedGates)
-            {
-                string[] nestedGateNameAndType = nestedGate.Split( ' ' );
-
-                if (nestedGateNameAndType.Length != 2)
-                {
-                    // TODO: Provide more specific exception.
-                    throw new ArgumentException( "nestedGates" );
-                }
-
-                // Validate the name of the nested gate.
-                string nestedGateName = nestedGateNameAndType[ 0 ];
-                // Validate the legality of the name of the nested gate.
-                if (!Program.IsLegalIdentifier( nestedGateName ))
-                {
-                    throw new ArgumentException( "nestedGates" );
-                }
-                // Validate the uniqueness of the name of the nested gate.
-                if (this.nestedGateTypes.ContainsKey( nestedGateName ))
-                {
-                    throw new ArgumentException( "nestedGates" );
-                }
-
-                // Validate the type of the nested gate.
-                string nestedGateTypeStr = nestedGateNameAndType[ 1 ];
-                // Validate the availability of the type of the nested gate.
-                if (!gateTypes.ContainsKey( nestedGateTypeStr ))
-                {
-                    throw new ArgumentException( "nestedGates" );
-                }
-
-                // Retrieve the type of the nested gate.
-                GateType nestedGateType = gateTypes[ nestedGateTypeStr ];
-
-                // Store the nested gate.
-                this.nestedGateTypes.Add( nestedGateName, nestedGateType );
-            }
-
-            //
-            // Validate and construct the connections.
-            //
-            this.connections = new Dictionary< string, string >();
-            foreach (string connection in connections)
-            {
-                string[] connectionToAndFrom = Regex.Split( connection, "->" );
-
-                if (connectionToAndFrom.Length != 2)
-                {
-                    // TODO: Provide more specific exception.
-                    throw new ArgumentException( connection );
-                }
-
-                // TODO: Validate the connection.
-                string connectionTo = connectionToAndFrom[ 0 ];
-                string connectionFrom = connectionToAndFrom[ 1 ];
-
-                // Store the connection.
-                this.connections.Add( connectionTo, connectionFrom );
-            }
-        }
-
         #endregion // Public instance constructors
 
         #region Public instance methods
+
+        /// <summary>
+        /// Adds a nested gate.
+        /// </summary>
+        /// 
+        /// <param name="line">The nested gate.</param>
+        public void AddNestedGate( string line )
+        {
+            ////
+            //// Validate and construct the nested gates.
+            ////
+            //if (nestedGates == null)
+            //{
+            //    throw new ArgumentNullException();
+            //}
+            //if (nestedGates.Count < 1)
+            //{
+            //    // TODO: Provide more specific exception.
+            //    throw new ArgumentException();
+            //}
+
+            //this.nestedGateTypes = new Dictionary<string, GateType>();
+            //foreach (string nestedGate in nestedGates)
+            //{
+            //    string[] nestedGateNameAndType = nestedGate.Split(' ');
+
+            //    if (nestedGateNameAndType.Length != 2)
+            //    {
+            //        // TODO: Provide more specific exception.
+            //        throw new ArgumentException("nestedGates");
+            //    }
+
+            //    // Validate the name of the nested gate.
+            //    string nestedGateName = nestedGateNameAndType[0];
+            //    // Validate the legality of the name of the nested gate.
+            //    if (!Program.IsLegalIdentifier(nestedGateName))
+            //    {
+            //        throw new ArgumentException("nestedGates");
+            //    }
+            //    // Validate the uniqueness of the name of the nested gate.
+            //    if (this.nestedGateTypes.ContainsKey(nestedGateName))
+            //    {
+            //        throw new ArgumentException("nestedGates");
+            //    }
+
+            //    // Validate the type of the nested gate.
+            //    string nestedGateTypeStr = nestedGateNameAndType[1];
+            //    // Validate the availability of the type of the nested gate.
+            //    if (!gateTypes.ContainsKey(nestedGateTypeStr))
+            //    {
+            //        throw new ArgumentException("nestedGates");
+            //    }
+
+            //    // Retrieve the type of the nested gate.
+            //    GateType nestedGateType = gateTypes[nestedGateTypeStr];
+
+            //    // Store the nested gate.
+            //    this.nestedGateTypes.Add(nestedGateName, nestedGateType);
+            //}
+        }
+
+        /// <summary>
+        /// Adds a connection.
+        /// </summary>
+        /// 
+        /// <param name="connection">The connection.</param>
+        public void AddConnection(string connection)
+        {
+            ////
+            //// Validate and construct the connections.
+            ////
+            //this.connections = new Dictionary<string, string>();
+            //foreach (string connection in connections)
+            //{
+            //    string[] connectionToAndFrom = Regex.Split(connection, "->");
+
+            //    if (connectionToAndFrom.Length != 2)
+            //    {
+            //        // TODO: Provide more specific exception.
+            //        throw new ArgumentException(connection);
+            //    }
+
+            //    // TODO: Validate the connection.
+            //    string connectionTo = connectionToAndFrom[0];
+            //    string connectionFrom = connectionToAndFrom[1];
+
+            //    // Store the connection.
+            //    this.connections.Add(connectionTo, connectionFrom);
+            //}
+        }
 
         /// <summary>
         /// Instantiates the composite gate object.
