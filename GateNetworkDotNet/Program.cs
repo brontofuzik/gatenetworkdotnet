@@ -170,37 +170,43 @@ namespace GateNetworkDotNet
                             {
                                 case CompositeGateTypeConstructionPhase.INPUTS:
 
-                                    if (!keyword.Equals("inputs"))
+                                    if (!keyword.Equals( "inputs" ))
                                     {
-                                        throw new MyException(lineNumber, "TODO");
+                                        throw new MyException( lineNumber, "TODO" );
                                     }
-                                    string[] inputPlugNames = ParsePlugNames(line);
-                                    basicGateType.SetInputPlugNames(inputPlugNames);
-                                    basicGateTypeConstructionPhase = BasicGateTypeConstructionPhase.OUTPUTS;
+                                    string[] inputPlugNames = ParsePlugNames( line );
+                                    compositeGateType.SetInputPlugNames( inputPlugNames );
+                                    compositeGateTypeConstructionPhase = CompositeGateTypeConstructionPhase.OUTPUTS;
                                     break;
 
                                 case CompositeGateTypeConstructionPhase.OUTPUTS:
 
-                                    if (!keyword.Equals("outputs"))
+                                    if (!keyword.Equals( "outputs" ))
                                     {
-                                        throw new MyException(lineNumber, "TODO");
+                                        throw new MyException( lineNumber, "TODO" );
                                     }
-                                    string[] outputPlugNames = ParsePlugNames(line);
-                                    basicGateType.SetOutputPlugNames(outputPlugNames);
-                                    basicGateTypeConstructionPhase = BasicGateTypeConstructionPhase.TRANSITIONS;
+                                    string[] outputPlugNames = ParsePlugNames( line );
+                                    compositeGateType.SetOutputPlugNames( outputPlugNames );
+                                    compositeGateTypeConstructionPhase = CompositeGateTypeConstructionPhase.GATES;
                                     break;
 
                                 case CompositeGateTypeConstructionPhase.GATES:
 
-                                    if (line.Equals("end"))
+                                    if (!keyword.Equals( "gate" ))
                                     {
-                                        basicGateTypeConstructionPhase = BasicGateTypeConstructionPhase.END;
+                                        throw new MyException( lineNumber, "TODO" );
                                     }
-                                    basicGateType.AddTransition(line);
+
+                                    compositeGateType.AddNestedGate( line );
                                     break;
 
                                 case CompositeGateTypeConstructionPhase.CONNECTIONS:
 
+                                    if (line.Equals( "end" ))
+                                    {
+                                        compositeGateTypeConstructionPhase = CompositeGateTypeConstructionPhase.END;
+                                    }
+                                    compositeGateType.AddConnection( line );
                                     break;
 
                                 default:
@@ -220,51 +226,6 @@ namespace GateNetworkDotNet
                     {
                         throw new MyException( lineNumber, "Syntax error" );
                     }
-                }
-
-                // Basic gate type: "and".
-                transitions = new List<string>(new string[] { "1 1 1" });
-
-                // Basic gate type: "or".
-                transitions = new List<string>(new string[] { "1 1 1", "0 1 1", "1 0 1" });
-
-                // Basic gate type: "not".
-                transitions = new List<string>(new string[] { "0 1" });
-
-                // Composite gate type: "nand".
-                nestedGates = new List<string>(new string[] { "a and", "n not" });
-                connections = new List<string>(new string[] { "a.i0->i0", "a.i1->i1", "n.i->a.o", "o->n.o" });
-
-                // Composite gate type "and_wrapper".
-                nestedGates = new List<string>(new string[] { "a and" });
-                connections = new List<string>(new string[] { "a.i0->i0", "a.i1->i1", "o->a.o" });
-
-                // Network type "network".
-                nestedGates = new List<string>(new string[] { "a1 and", "o1 or", "n1 nand" });
-                connections = new List<string>(new string[] { "a1.i0->a", "a1.i1->b", "o1.i0->a", "o1.i1->b", "n1.i0->a", "n1.i1->b", "a&b->a1.o", "a|b->o1.o", "!a&b->n1.o" });
-
-
-
-                //
-                // Network.
-                //
-
-                // Network "n network".
-                name = "n";
-                type = "network";
-                gateType = gateTypes[type];
-                gate = gateType.Instantiate(name);
-                gate.Initialize();
-
-                gate.InputPlugValues = "1 1";
-
-                int cycle = 0;
-                while (true)
-                {
-                    Console.WriteLine(cycle + " " + gate.OutputPlugValues);
-                    gate.Evaluate();
-                    cycle++;
-                    Console.ReadKey();
                 }
             }
             catch (MyException e)

@@ -169,18 +169,18 @@ namespace GateNetworkDotNet.Gates
         /// <param name="name">The name of the gate.</param>
         /// <param name="type">The type of the gate.</param>
         /// 
-        /// <exception cref="Network.Exceptions.IllegalNameException">
-        /// Condition: <c>name</c> is not a legal gate name.
-        /// </exception>
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>type</c> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="System.ArgumentException">
+        /// Condition: <c>name</c> is not a legal identifier.
         /// </exception>
         protected Gate( string name, GateType type )
         {
             // Validate the name.
             if (!Program.IsLegalIdentifier( name ))
             {
-                throw new IllegalIdentifierException( name );
+                throw new ArgumentException( name );
             }
             this.name = name;
 
