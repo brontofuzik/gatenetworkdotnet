@@ -36,6 +36,11 @@ namespace GateNetworkDotNet.GateTypes
         /// </summary>
         private Dictionary< string, string > connections;
 
+        /// <summary>
+        /// The phase of construction of the composite gate.
+        /// </summary>
+        private CompositeGateTypeConstructionPhase constructionPhase;
+
         #endregion // Private instance fields
 
         #region Public instance properties
@@ -86,6 +91,21 @@ namespace GateNetworkDotNet.GateTypes
             }
         }
 
+        /// <summary>
+        /// Determines whether the composite gate is constructed or not.
+        /// </summary>
+        /// 
+        /// <value>
+        /// <c>True</c> if the composite gate is constructed, <c>false</c> otherwise.
+        /// </value>
+        public override bool IsConstructed
+        {
+            get
+            {
+                return (constructionPhase == CompositeGateTypeConstructionPhase.END);
+            }
+        }
+
         #endregion // Public instance properties
 
         #region Public instance constructors
@@ -104,6 +124,8 @@ namespace GateNetworkDotNet.GateTypes
         {
             nestedGateTypes = new Dictionary< string, GateType >();
             connections = new Dictionary< string, string >();
+
+            constructionPhase = CompositeGateTypeConstructionPhase.INPUTS;
         }
 
         #endregion // Public instance constructors
@@ -111,63 +133,101 @@ namespace GateNetworkDotNet.GateTypes
         #region Public instance methods
 
         /// <summary>
+        /// Sets the names of the input plugs.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugNames">The names of the input plugs.</param>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>inputPlugNames</c> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="System.ArgumentException">
+        /// Condition: <c>inputPlugNames</c> contains an illegal input plug name.
+        /// </exception>
+        public override void SetInputPlugNames( string inputPlugNamesString )
+        {
+            if (constructionPhase != CompositeGateTypeConstructionPhase.INPUTS)
+            {
+                // TODO: Provide more specific exception.
+                throw new Exception();
+            }
+
+            base.SetInputPlugNames( inputPlugNamesString + " " + implicitInputPlugNames );
+
+            constructionPhase = CompositeGateTypeConstructionPhase.OUTPUTS;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="outputPlugNamesString"></param>
+        public override void SetOutputPlugNames(string outputPlugNamesString)
+        {
+            if (constructionPhase != CompositeGateTypeConstructionPhase.OUTPUTS)
+            {
+                // TODO: Provide more specific exception.
+                throw new Exception();
+            }
+
+            base.SetOutputPlugNames( outputPlugNamesString );
+
+            constructionPhase = CompositeGateTypeConstructionPhase.GATES;
+        }
+
+        /// <summary>
         /// Adds a nested gate.
         /// </summary>
         /// 
         /// <param name="line">The nested gate.</param>
-        public void AddNestedGate( string line )
+        public void AddNestedGate( string nestedGate, Dictionary< string, GateType > gateTypes )
         {
-            ////
-            //// Validate and construct the nested gates.
-            ////
-            //if (nestedGates == null)
-            //{
-            //    throw new ArgumentNullException();
-            //}
-            //if (nestedGates.Count < 1)
-            //{
-            //    // TODO: Provide more specific exception.
-            //    throw new ArgumentException();
-            //}
+            // Validate the construction phase.
+            if (constructionPhase != CompositeGateTypeConstructionPhase.GATES)
+            {
+                // TODO: Provide more specifix exception.
+                throw new Exception();
+            }
 
-            //this.nestedGateTypes = new Dictionary<string, GateType>();
-            //foreach (string nestedGate in nestedGates)
-            //{
-            //    string[] nestedGateNameAndType = nestedGate.Split(' ');
+            // Validate the nested gate string.
+            if (nestedGate == null)
+            {
+                throw new ArgumentNullException( "nestedGate" );
+            }
 
-            //    if (nestedGateNameAndType.Length != 2)
-            //    {
-            //        // TODO: Provide more specific exception.
-            //        throw new ArgumentException("nestedGates");
-            //    }
+            string[] nestedGateNameAndType = nestedGate.Split( ' ' );
 
-            //    // Validate the name of the nested gate.
-            //    string nestedGateName = nestedGateNameAndType[0];
-            //    // Validate the legality of the name of the nested gate.
-            //    if (!Program.IsLegalIdentifier(nestedGateName))
-            //    {
-            //        throw new ArgumentException("nestedGates");
-            //    }
-            //    // Validate the uniqueness of the name of the nested gate.
-            //    if (this.nestedGateTypes.ContainsKey(nestedGateName))
-            //    {
-            //        throw new ArgumentException("nestedGates");
-            //    }
+            if (nestedGateNameAndType.Length != 2)
+            {
+                // TODO: Provide more specific exception.
+                throw new ArgumentException( "nestedGate" );
+            }
 
-            //    // Validate the type of the nested gate.
-            //    string nestedGateTypeStr = nestedGateNameAndType[1];
-            //    // Validate the availability of the type of the nested gate.
-            //    if (!gateTypes.ContainsKey(nestedGateTypeStr))
-            //    {
-            //        throw new ArgumentException("nestedGates");
-            //    }
+            // Validate the name of the nested gate.
+            string nestedGateName = nestedGateNameAndType[ 0 ];
+            // Validate the legality of the name of the nested gate.
+            if (!Program.IsLegalIdentifier( nestedGateName ))
+            {
+                throw new ArgumentException( "nestedGate" );
+            }
+            // Validate the uniqueness of the name of the nested gate.
+            if (this.nestedGateTypes.ContainsKey( nestedGateName ))
+            {
+                throw new ArgumentException( "nestedGate" );
+            }
 
-            //    // Retrieve the type of the nested gate.
-            //    GateType nestedGateType = gateTypes[nestedGateTypeStr];
+            // Validate the type of the nested gate.
+            string nestedGateTypeString = nestedGateNameAndType[ 1 ];
+            // Validate the availability of the type of the nested gate.
+            if (!gateTypes.ContainsKey( nestedGateTypeString ))
+            {
+                throw new ArgumentException( "nestedGate" );
+            }
 
-            //    // Store the nested gate.
-            //    this.nestedGateTypes.Add(nestedGateName, nestedGateType);
-            //}
+            // Retrieve the type of the nested gate.
+            GateType nestedGateType = gateTypes[ nestedGateTypeString ];
+
+            // Store the nested gate.
+            nestedGateTypes.Add( nestedGateName, nestedGateType );
         }
 
         /// <summary>
@@ -175,29 +235,37 @@ namespace GateNetworkDotNet.GateTypes
         /// </summary>
         /// 
         /// <param name="connection">The connection.</param>
-        public void AddConnection(string connection)
+        public void AddConnection( string connection )
         {
-            ////
-            //// Validate and construct the connections.
-            ////
-            //this.connections = new Dictionary<string, string>();
-            //foreach (string connection in connections)
-            //{
-            //    string[] connectionToAndFrom = Regex.Split(connection, "->");
+            // Validate the phase of construction.
+            if (constructionPhase != CompositeGateTypeConstructionPhase.GATES && constructionPhase != CompositeGateTypeConstructionPhase.CONNECTIONS)
+            {
+                // TODO: Provide more specific exception.
+                throw new Exception();
+            }
 
-            //    if (connectionToAndFrom.Length != 2)
-            //    {
-            //        // TODO: Provide more specific exception.
-            //        throw new ArgumentException(connection);
-            //    }
+            string[] connectionToAndFrom = Regex.Split( connection, "->" );
 
-            //    // TODO: Validate the connection.
-            //    string connectionTo = connectionToAndFrom[0];
-            //    string connectionFrom = connectionToAndFrom[1];
+            if (connectionToAndFrom.Length != 2)
+            {
+                // TODO: Provide more specific exception.
+                throw new ArgumentException( "connection" );
+            }
 
-            //    // Store the connection.
-            //    this.connections.Add(connectionTo, connectionFrom);
-            //}
+            // TODO: Validate the connection.
+            string connectionTo = connectionToAndFrom[ 0 ];
+            string connectionFrom = connectionToAndFrom[1];
+
+            // Store the connection.
+            connections.Add( connectionTo, connectionFrom );
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override void EndConstruction()
+        {
+            constructionPhase = CompositeGateTypeConstructionPhase.END;
         }
 
         /// <summary>
@@ -215,5 +283,16 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         #endregion // Public instance methods
+    }
+
+    enum CompositeGateTypeConstructionPhase
+    {
+        BEGINNING,
+        NAME,
+        INPUTS,
+        OUTPUTS,
+        GATES,
+        CONNECTIONS,
+        END
     }
 }

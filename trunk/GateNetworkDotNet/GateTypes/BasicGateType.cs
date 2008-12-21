@@ -21,6 +21,11 @@ namespace GateNetworkDotNet.GateTypes
         /// </summary>
         private Dictionary< string, string > transitions;
 
+        /// <summary>
+        /// The phase of construction of the basic gate.
+        /// </summary>
+        private BasicGateTypeConstructionPhase constructionPhase;
+
         #endregion // Private instance fields
 
         #region Public instance properties
@@ -37,6 +42,21 @@ namespace GateNetworkDotNet.GateTypes
             get
             {
                 return InputPlugCount + OutputPlugCount;
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the basic gate type is constructed.
+        /// </summary>
+        /// 
+        /// <value>
+        /// <c>True</c> if the basic gate type is constructed, <c>false</c> otherwise.
+        /// </value>
+        public override bool IsConstructed
+        {
+            get
+            {
+                return (constructionPhase == BasicGateTypeConstructionPhase.END);
             }
         }
 
@@ -57,11 +77,47 @@ namespace GateNetworkDotNet.GateTypes
             : base( name )
         {
             transitions = new Dictionary< string, string >();
+
+            constructionPhase = BasicGateTypeConstructionPhase.INPUTS;
         }
 
         #endregion // Public instance constructors
 
         #region Public instance methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="inputPlugNamesString"></param>
+        public override void SetInputPlugNames(string inputPlugNamesString)
+        {
+            if (constructionPhase != BasicGateTypeConstructionPhase.INPUTS)
+            {
+                // TODO: Provide more specific exception.
+                throw new Exception();
+            }
+
+            base.SetInputPlugNames( inputPlugNamesString );
+
+            constructionPhase = BasicGateTypeConstructionPhase.OUTPUTS;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="outputPlugNamesString"></param>
+        public override void SetOutputPlugNames(string outputPlugNamesString)
+        {
+            if (constructionPhase != BasicGateTypeConstructionPhase.OUTPUTS)
+            {
+                // TODO: Provide more specific exception.
+                throw new Exception();
+            }
+
+            base.SetOutputPlugNames( outputPlugNamesString );
+
+            constructionPhase = BasicGateTypeConstructionPhase.TRANSITIONS;
+        }
 
         /// <summary>
         /// Adds a transition to the transitions
@@ -70,6 +126,11 @@ namespace GateNetworkDotNet.GateTypes
         /// <param name="transition">The transition.</param>
         public void AddTransition( string transition )
         {
+            if (constructionPhase != BasicGateTypeConstructionPhase.TRANSITIONS)
+            {
+                throw new Exception();
+            }
+
             // Split the transition line.
             string[] inputsAndOutputs = transition.Split( ' ' );
 
@@ -96,6 +157,14 @@ namespace GateNetworkDotNet.GateTypes
 
             // Add the (inputs, outputs) key-value-pair into the dictionary.
             transitions.Add( inputs, outputs );
+        }
+
+        /// <summary>
+        /// Ends the construction process.
+        /// </summary>
+        public override void EndConstruction()
+        {
+            constructionPhase = BasicGateTypeConstructionPhase.END;
         }
 
         /// <summary>
@@ -150,5 +219,14 @@ namespace GateNetworkDotNet.GateTypes
             }
         }
         #endregion // Public instance methods
+    }
+
+    enum BasicGateTypeConstructionPhase
+    {
+        BEGINNING,
+        INPUTS,
+        OUTPUTS,
+        TRANSITIONS,
+        END
     }
 }
