@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using GateNetworkDotNet.Exceptions;
 using GateNetworkDotNet.Gates;
 using GateNetworkDotNet.GateTypes;
-using GateNetworkDotNet.GateTypes.ConstructionPhases;
 
 namespace GateNetworkDotNet
 {
@@ -33,19 +32,14 @@ namespace GateNetworkDotNet
                 {
                     line = streamReader.ReadLine();
                     lineNumber++;
-
-                    // The end of the network configuration file has been reached.
                     if (line == null)
                     {
                         break;
                     }
-
-                    // If the line can be ignored, ignore it, and continue with reading the next line.
                     if (IsIgnorableLine( line ))
                     {
                         continue;
                     }
-
                     //line = line.Trim();
 
                     string keyword = ParseKeyword( line );
@@ -55,76 +49,53 @@ namespace GateNetworkDotNet
                         // ======================================
                         // The construction of a basic gate type.
                         // ======================================
-
-                        BasicGateTypeConstructionPhase basicGateTypeConstructionPhase = BasicGateTypeConstructionPhase.NAME;
+                        
                         string basicGateName = ParseName( line );
+
+                        // Check for basic gate type redefinition.
                         if (gateTypes.ContainsKey( basicGateName ))
                         {
                             throw new MyException( lineNumber, "Duplicate" );
                         }
 
                         BasicGateType basicGateType = new BasicGateType( basicGateName );
-                        basicGateTypeConstructionPhase = BasicGateTypeConstructionPhase.INPUTS;
 
                         // TODO: Handle EOF eventuality.
-                        while (basicGateTypeConstructionPhase != BasicGateTypeConstructionPhase.END)
+                        while (!basicGateType.IsConstructed)
                         {
                             line = streamReader.ReadLine();
                             lineNumber++;
-
-                            // The end of the network configuration file has been reached.
                             if (line == null)
                             {
                                 break;
                             }
-
-                            // If the line can be ignored, ignore it, and continue with reading the next line.
                             if (IsIgnorableLine( line ))
                             {
                                 continue;
                             }
-
                             //line = line.Trim();
 
                             keyword = ParseKeyword( line );
 
-                            switch (basicGateTypeConstructionPhase)
+                            if (keyword.Equals( "inputs" ))
                             {
-                                case BasicGateTypeConstructionPhase.INPUTS:
-
-                                    if (!keyword.Equals( "inputs" ))
-                                    {
-                                        throw new MyException( lineNumber, "TODO" );
-                                    }
-                                    string[] inputPlugNames = ParsePlugNames( line );
-                                    basicGateType.SetInputPlugNames( inputPlugNames );
-                                    basicGateTypeConstructionPhase = BasicGateTypeConstructionPhase.OUTPUTS;
-                                    break;
-
-                                case BasicGateTypeConstructionPhase.OUTPUTS:
-
-                                    if (!keyword.Equals( "outputs" ))
-                                    {
-                                        throw new MyException( lineNumber, "TODO" );
-                                    }
-                                    string[] outputPlugNames = ParsePlugNames( line );
-                                    basicGateType.SetOutputPlugNames( outputPlugNames );
-                                    basicGateTypeConstructionPhase = BasicGateTypeConstructionPhase.TRANSITIONS;
-                                    break;
-
-                                case BasicGateTypeConstructionPhase.TRANSITIONS:
-
-                                    if (line.Equals( "end" ))
-                                    {
-                                        basicGateTypeConstructionPhase = BasicGateTypeConstructionPhase.END;
-                                    }
-                                    basicGateType.AddTransition( line );
-                                    break;
-
-                                default:
-
-                                    break;
-                              }
+                                string inputPlugNames = ParsePlugNames( line );
+                                basicGateType.SetInputPlugNames( inputPlugNames );
+                            }
+                            else if (keyword.Equals( "outputs" ))
+                            {
+                                string outputPlugNames = ParsePlugNames( line );
+                                basicGateType.SetOutputPlugNames( outputPlugNames );
+                            }
+                            else if (keyword.Equals( "end" ))
+                            {
+                                basicGateType.EndConstruction();
+                            }
+                            else
+                            {
+                                string transition = ParseTransition( line );
+                                basicGateType.AddTransition( transition );
+                            }
                          }
                          gateTypes.Add( basicGateName, basicGateType );
                     }
@@ -134,84 +105,56 @@ namespace GateNetworkDotNet
                         // The construction of a composite gate type.
                         // ==========================================
 
-                        CompositeGateTypeConstructionPhase compositeGateTypeConstructionPhase = CompositeGateTypeConstructionPhase.NAME;
                         string compositeGateName = ParseName( line );
+
+                        // Check for composite gate type redefinition.
                         if (gateTypes.ContainsKey( compositeGateName ))
                         {
                             throw new MyException( lineNumber, "Duplicate" );
                         }
 
                         CompositeGateType compositeGateType = new CompositeGateType( compositeGateName );
-                        compositeGateTypeConstructionPhase = CompositeGateTypeConstructionPhase.INPUTS;
 
                         // TODO: Handle EOF eventuality.
-                        while (compositeGateTypeConstructionPhase != CompositeGateTypeConstructionPhase.END)
+                        while (!compositeGateType.IsConstructed)
                         {
                             line = streamReader.ReadLine();
                             lineNumber++;
-
-                            // The end of the network configuration file has been reached.
                             if (line == null)
                             {
                                 break;
                             }
-
-                            // If the line can be ignored, ignore it, and continue with reading the next line.
                             if (IsIgnorableLine( line ))
                             {
                                 continue;
                             }
-
                             //line = line.Trim();
 
                             keyword = ParseKeyword( line );
 
-                            switch (compositeGateTypeConstructionPhase)
+                            if (keyword.Equals( "inputs" ))
                             {
-                                case CompositeGateTypeConstructionPhase.INPUTS:
-
-                                    if (!keyword.Equals( "inputs" ))
-                                    {
-                                        throw new MyException( lineNumber, "TODO" );
-                                    }
-                                    string[] inputPlugNames = ParsePlugNames( line );
-                                    compositeGateType.SetInputPlugNames( inputPlugNames );
-                                    compositeGateTypeConstructionPhase = CompositeGateTypeConstructionPhase.OUTPUTS;
-                                    break;
-
-                                case CompositeGateTypeConstructionPhase.OUTPUTS:
-
-                                    if (!keyword.Equals( "outputs" ))
-                                    {
-                                        throw new MyException( lineNumber, "TODO" );
-                                    }
-                                    string[] outputPlugNames = ParsePlugNames( line );
-                                    compositeGateType.SetOutputPlugNames( outputPlugNames );
-                                    compositeGateTypeConstructionPhase = CompositeGateTypeConstructionPhase.GATES;
-                                    break;
-
-                                case CompositeGateTypeConstructionPhase.GATES:
-
-                                    if (!keyword.Equals( "gate" ))
-                                    {
-                                        throw new MyException( lineNumber, "TODO" );
-                                    }
-
-                                    compositeGateType.AddNestedGate( line );
-                                    break;
-
-                                case CompositeGateTypeConstructionPhase.CONNECTIONS:
-
-                                    if (line.Equals( "end" ))
-                                    {
-                                        compositeGateTypeConstructionPhase = CompositeGateTypeConstructionPhase.END;
-                                    }
-                                    compositeGateType.AddConnection( line );
-                                    break;
-
-                                default:
-
-                                    break;
+                                string inputPlugNames = ParsePlugNames( line );
+                                compositeGateType.SetInputPlugNames( inputPlugNames );
+                            }
+                            else if (keyword.Equals( "outputs" ))
+                            {
+                                string outputPlugNames = ParsePlugNames( line );
+                                compositeGateType.SetOutputPlugNames( outputPlugNames );
+                            }
+                            else if (keyword.Equals( "gate" ))
+                            {
+                                string nestedGate = ParseNestedGate( line );
+                                compositeGateType.AddNestedGate( nestedGate, gateTypes );
+                            }
+                            else if (keyword.Equals("end"))
+                            {
+                                compositeGateType.EndConstruction();
+                            }
+                            else
+                            {
+                                string connection = ParseConnection( line );
+                                compositeGateType.AddConnection( connection );
                             }
                         }
                         gateTypes.Add( compositeGateName, compositeGateType);
@@ -266,7 +209,7 @@ namespace GateNetworkDotNet
         /// </returns>
         public static string ParseKeyword( string line )
         {
-            return line.Substring( 0, line.IndexOf( ' ' ) );
+            return (line.IndexOf( ' ' ) != -1) ? line.Substring( 0, line.IndexOf( ' ' ) ) : line;
         }
 
         /// <summary>
@@ -278,13 +221,13 @@ namespace GateNetworkDotNet
         /// <returns>
         /// The name of the (basic or composite) gate.
         /// </returns>
-        public static string ParseName(string line)
+        public static string ParseName( string line )
         {
             return line.Substring( line.IndexOf( ' ' ) );
         }
 
         /// <summary>
-        /// parses the line for names of (input or outout) plugs.
+        /// Parse a line for names of (input or output) plugs.
         /// </summary>
         /// 
         /// <param name="line">The line.</param>
@@ -292,10 +235,51 @@ namespace GateNetworkDotNet
         /// <returns>
         /// The names of the (input or output) plugs.
         /// </returns>
-        public static string[] ParsePlugNames( string line )
+        public static string ParsePlugNames( string line )
         {
-            string plugNamesStr = line.Substring( line.IndexOf( ' ' ) );
-            return plugNamesStr.Split( ' ' );
+            return (line.IndexOf( ' ' ) != -1) ? line.Substring( line.IndexOf( ' ' ) + 1 ) : "";
+        }
+
+        /// <summary>
+        /// Parses a line for a transition.
+        /// </summary>
+        /// 
+        /// <param name="line">The line.</param>
+        /// 
+        /// <returns>
+        /// The transition.
+        /// </returns>
+        public static string ParseTransition( string line )
+        {
+            return line;
+        }
+
+        /// <summary>
+        /// Parses a line for a nested gate.
+        /// </summary>
+        /// 
+        /// <param name="line">The line.</param>
+        /// 
+        /// <returns>
+        /// The nested gate.
+        /// </returns>
+        public static string ParseNestedGate( string line )
+        {
+            return line.Substring( line.IndexOf( ' ' ) + 1 ); 
+        }
+
+        /// <summary>
+        /// Parses a line for a connection.
+        /// </summary>
+        /// 
+        /// <param name="line">The line.</param>
+        /// 
+        /// <returns>
+        /// The connection.
+        /// </returns>
+        public static string ParseConnection( string line )
+        {
+            return line;
         }
 
         /// <summary>
@@ -307,7 +291,7 @@ namespace GateNetworkDotNet
         /// <returns>
         /// <c>True</c> if the identifier is legal, <c>false</c> otherwise.
         /// </returns>
-        public static bool IsLegalIdentifier(string identifier)
+        public static bool IsLegalIdentifier( string identifier )
         {
             // TODO: Provide implementation.
             string legalIdentifierPattern = @"^(.*)$";
