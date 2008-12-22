@@ -17,11 +17,13 @@ namespace GateNetworkDotNet
             
             try
             {
+                // Open the network configuration file.
+                streamReader = new StreamReader( args[ 0 ] );
+
                 // The dictionary of (known) gate types.
                 Dictionary< string, GateType > gateTypes = new Dictionary< string, GateType >();
 
-                // Open the network configuration file.
-                streamReader = new StreamReader( args[ 0 ] );
+                GateType gateType;
 
                 // Loop invariant:
                 // "line" contains the most recently read line.
@@ -42,133 +44,103 @@ namespace GateNetworkDotNet
                     }
                     //line = line.Trim();
 
-                    string keyword = ParseKeyword( line );
-
-                    if (keyword.Equals( "gate" ))
+                    string gateTypeClass = ParseKeyword( line );
+                    
+                    if (gateTypeClass.Equals( "gate" ))
                     {
-                        // ======================================
-                        // The construction of a basic gate type.
-                        // ======================================
-                        
-                        string basicGateName = ParseName( line );
-
-                        // Check for basic gate type redefinition.
-                        if (gateTypes.ContainsKey( basicGateName ))
-                        {
-                            throw new MyException( lineNumber, "Duplicate" );
-                        }
-
-                        BasicGateType basicGateType = new BasicGateType( basicGateName );
-
-                        // TODO: Handle EOF eventuality.
-                        while (!basicGateType.IsConstructed)
-                        {
-                            line = streamReader.ReadLine();
-                            lineNumber++;
-                            if (line == null)
-                            {
-                                break;
-                            }
-                            if (IsIgnorableLine( line ))
-                            {
-                                continue;
-                            }
-                            //line = line.Trim();
-
-                            keyword = ParseKeyword( line );
-
-                            if (keyword.Equals( "inputs" ))
-                            {
-                                string inputPlugNames = ParsePlugNames( line );
-                                basicGateType.SetInputPlugNames( inputPlugNames );
-                            }
-                            else if (keyword.Equals( "outputs" ))
-                            {
-                                string outputPlugNames = ParsePlugNames( line );
-                                basicGateType.SetOutputPlugNames( outputPlugNames );
-                            }
-                            else if (keyword.Equals( "end" ))
-                            {
-                                basicGateType.EndConstruction();
-                            }
-                            else
-                            {
-                                string transition = ParseTransition( line );
-                                basicGateType.AddTransition( transition );
-                            }
-                         }
-                         gateTypes.Add( basicGateName, basicGateType );
+                        gateType = new BasicGateType();
                     }
-                    else if (keyword.Equals( "composite" ))
+                    else if (gateTypeClass.Equals( "composite" ))
                     {
-                        // ==========================================
-                        // The construction of a composite gate type.
-                        // ==========================================
-
-                        string compositeGateName = ParseName( line );
-
-                        // Check for composite gate type redefinition.
-                        if (gateTypes.ContainsKey( compositeGateName ))
-                        {
-                            throw new MyException( lineNumber, "Duplicate" );
-                        }
-
-                        CompositeGateType compositeGateType = new CompositeGateType( compositeGateName );
-
-                        // TODO: Handle EOF eventuality.
-                        while (!compositeGateType.IsConstructed)
-                        {
-                            line = streamReader.ReadLine();
-                            lineNumber++;
-                            if (line == null)
-                            {
-                                break;
-                            }
-                            if (IsIgnorableLine( line ))
-                            {
-                                continue;
-                            }
-                            //line = line.Trim();
-
-                            keyword = ParseKeyword( line );
-
-                            if (keyword.Equals( "inputs" ))
-                            {
-                                string inputPlugNames = ParsePlugNames( line );
-                                compositeGateType.SetInputPlugNames( inputPlugNames );
-                            }
-                            else if (keyword.Equals( "outputs" ))
-                            {
-                                string outputPlugNames = ParsePlugNames( line );
-                                compositeGateType.SetOutputPlugNames( outputPlugNames );
-                            }
-                            else if (keyword.Equals( "gate" ))
-                            {
-                                string nestedGate = ParseNestedGate( line );
-                                compositeGateType.AddNestedGate( nestedGate, gateTypes );
-                            }
-                            else if (keyword.Equals("end"))
-                            {
-                                compositeGateType.EndConstruction();
-                            }
-                            else
-                            {
-                                string connection = ParseConnection( line );
-                                compositeGateType.AddConnection( connection );
-                            }
-                        }
-                        gateTypes.Add( compositeGateName, compositeGateType);
+                        gateType = new CompositeGateType();
                     }
-                    else if (keyword.Equals( "network" ))
+                    else if (gateTypeClass.Equals( "network" ))
                     {
-                        //
-                        // The network construction.
-                        //
+                        gateType = new CompositeGateType();
                     }
                     else
                     {
                         throw new MyException( lineNumber, "Syntax error" );
                     }
+
+                    // Set the name of the gate type.
+                    string gateTypeName = ParseName( line );
+                    if (gateTypes.ContainsKey( gateTypeName ))
+                    {
+                        throw new MyException( lineNumber, "Duplicate" );
+                    }
+                    gateType.SetName( gateTypeName );
+
+                    // TODO: Handle EOF eventuality.
+                    while (!gateType.IsConstructed)
+                    {
+                        line = streamReader.ReadLine();
+                        lineNumber++;
+                        if (line == null)
+                        {
+                            break;
+                        }
+                        if (IsIgnorableLine( line ))
+                        {
+                            continue;
+                        }
+                        //line = line.Trim();
+
+                        string keyword = ParseKeyword( line );
+
+                        if (keyword.Equals( "inputs" ))
+                        {
+                            // Set the names of the input plugs.
+                            string inputPlugNames = ParsePlugNames( line );
+                            gateType.SetInputPlugNames( inputPlugNames );
+                        }
+                        else if (keyword.Equals( "outputs" ))
+                        {
+                            // Set the names of the output plugs.
+                            string outputPlugNames = ParsePlugNames( line );
+                            gateType.SetOutputPlugNames( outputPlugNames );
+                        }
+                        else if (keyword.Equals( "gate" ))
+                        {
+                            // Set the nested gates.
+                            string nestedGate = ParseNestedGate( line );
+                            (gateType as CompositeGateType).AddNestedGate( nestedGate, gateTypes );
+                        }
+                        else if (keyword.Equals( "end" ))
+                        {
+                            // End the construction process.
+                            gateType.EndConstruction();
+                        }
+                        else
+                        {
+                            if (gateTypeClass.Equals( "gate" ))
+                            {
+                                // Set the transitions.
+                                string transition = ParseTransition( line );
+                                (gateType as BasicGateType).AddTransition( transition );
+                            }
+                            else
+                            {
+                                // Set the connections.
+                                string connection = ParseConnection( line );
+                                (gateType as CompositeGateType).AddConnection( connection );
+                            }
+                        }
+                    }
+
+                    gateTypes.Add( gateTypeName, gateType );
+                }
+
+                // Create the gate network.
+                CompositeGate network = (CompositeGate)gateTypes[ "network" ].Instantiate( "network" );
+                network.Initialize();
+
+                network.InputPlugValues = "1 0";
+                while (true)
+                {
+                    network.Evaluate();
+                    Console.WriteLine( network.OutputPlugValues );
+                    Console.ReadKey();
                 }
             }
             catch (MyException e)
@@ -223,7 +195,7 @@ namespace GateNetworkDotNet
         /// </returns>
         public static string ParseName( string line )
         {
-            return line.Substring( line.IndexOf( ' ' ) );
+            return line.Substring( line.IndexOf( ' ' ) + 1 );
         }
 
         /// <summary>
