@@ -73,17 +73,41 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentException">
         /// Condition: <c>name</c> is not a legal identifier.
         /// </exception>
-        public BasicGateType( string name )
-            : base( name )
+        public BasicGateType()
         {
             transitions = new Dictionary< string, string >();
 
-            constructionPhase = BasicGateTypeConstructionPhase.INPUTS;
+            constructionPhase = BasicGateTypeConstructionPhase.NAME;
         }
 
         #endregion // Public instance constructors
 
         #region Public instance methods
+
+        /// <summary>
+        /// Sets the name of the basic gate type.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the basic gate type.</param>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>name</c> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="System.ArgumentException">
+        /// Condition: <c>name</c> is not a legal identifier.
+        /// </exception>
+        public override void SetName( string name )
+        {
+            if (constructionPhase != BasicGateTypeConstructionPhase.NAME)
+            {
+                // TODO: Provide more specific exception.
+                throw new Exception();
+            }
+
+            base.SetName( name );
+
+            constructionPhase = BasicGateTypeConstructionPhase.INPUTS;
+        }
 
         /// <summary>
         /// 
@@ -224,6 +248,7 @@ namespace GateNetworkDotNet.GateTypes
     enum BasicGateTypeConstructionPhase
     {
         BEGINNING,
+        NAME,
         INPUTS,
         OUTPUTS,
         TRANSITIONS,

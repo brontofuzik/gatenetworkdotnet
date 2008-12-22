@@ -119,18 +119,42 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentException">
         /// Condition: <c>name</c> is not a legal identifier.
         /// </exception>
-        public CompositeGateType( string name )
-            : base( name )
+        public CompositeGateType()
         {
             nestedGateTypes = new Dictionary< string, GateType >();
             connections = new Dictionary< string, string >();
 
-            constructionPhase = CompositeGateTypeConstructionPhase.INPUTS;
+            constructionPhase = CompositeGateTypeConstructionPhase.NAME;
         }
 
         #endregion // Public instance constructors
 
         #region Public instance methods
+
+        /// <summary>
+        /// Sets the name of the composite gate type.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the composite gate type.</param>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>name</c> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="System.ArgumentException">
+        /// Condition: <c>name</c> is not a legal identifier.
+        /// </exception>
+        public override void SetName( string name )
+        {
+            if (constructionPhase != CompositeGateTypeConstructionPhase.NAME)
+            {
+                // TODO: Provide more specific exception.
+                throw new Exception();
+            }
+
+            base.SetName( name );
+
+            constructionPhase = CompositeGateTypeConstructionPhase.INPUTS;
+        }
 
         /// <summary>
         /// Sets the names of the input plugs.
@@ -210,7 +234,7 @@ namespace GateNetworkDotNet.GateTypes
                 throw new ArgumentException( "nestedGate" );
             }
             // Validate the uniqueness of the name of the nested gate.
-            if (this.nestedGateTypes.ContainsKey( nestedGateName ))
+            if (nestedGateTypes.ContainsKey( nestedGateName ))
             {
                 throw new ArgumentException( "nestedGate" );
             }
@@ -237,8 +261,13 @@ namespace GateNetworkDotNet.GateTypes
         /// <param name="connection">The connection.</param>
         public void AddConnection( string connection )
         {
+            if (constructionPhase == CompositeGateTypeConstructionPhase.GATES)
+            {
+                constructionPhase = CompositeGateTypeConstructionPhase.CONNECTIONS;
+            }
+
             // Validate the phase of construction.
-            if (constructionPhase != CompositeGateTypeConstructionPhase.GATES && constructionPhase != CompositeGateTypeConstructionPhase.CONNECTIONS)
+            if (constructionPhase != CompositeGateTypeConstructionPhase.CONNECTIONS)
             {
                 // TODO: Provide more specific exception.
                 throw new Exception();

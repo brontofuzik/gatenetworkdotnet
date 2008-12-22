@@ -106,6 +106,13 @@ namespace GateNetworkDotNet.GateTypes
             }
         }
 
+        /// <summary>
+        /// Determines whther the (abstract) gate is constructed or not.
+        /// </summary>
+        /// 
+        /// <value>
+        /// <c>True</c> if the (abstract) gate is constructed, <c>false</c> otherwise.
+        /// </value>
         public abstract bool IsConstructed
         {
             get;
@@ -113,21 +120,21 @@ namespace GateNetworkDotNet.GateTypes
 
         #endregion // Public instance properties
 
-        #region Protected instance constructors
+        #region Public instance mehods
 
         /// <summary>
-        /// Creates a new (abstract) gate type.
+        /// Sets the name of the (abstract) gate type.
         /// </summary>
         /// 
         /// <param name="name">The name of the (abstract) gate type.</param>
-        ///
+        /// 
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>name</c> is <c>null</c>.
         /// </exception>
         /// <exception cref="System.ArgumentException">
         /// Condition: <c>name</c> is not a legal identifier.
         /// </exception>
-        public GateType( string name )
+        public virtual void SetName( string name )
         {
             // Validate the name.
             if (name == null)
@@ -138,12 +145,8 @@ namespace GateNetworkDotNet.GateTypes
             {
                 throw new ArgumentException( "name" );
             }
-            this.name = name;
+            this.name = name;    
         }
-
-        #endregion // Protected instance constructors
-
-        #region Public instance mehods
 
         /// <summary>
         /// Sets the names of the input plugs.
