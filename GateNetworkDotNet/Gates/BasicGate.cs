@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using GateNetworkDotNet.Gates.Plugs;
 using GateNetworkDotNet.GateTypes;
 
 namespace GateNetworkDotNet.Gates
@@ -81,6 +80,20 @@ namespace GateNetworkDotNet.Gates
         #endregion // Public instance constructors
 
         #region Public instance methods
+
+        /// <summary>
+        /// Sets the values of the input plugs.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugValues">The values of the input plugs.</param>
+        public override void SetInputPlugValues( string inputPlugValuesString )
+        {
+            string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
+            for (int i = 0; i < InputPlugCount; i++)
+            {
+                InputPlugs[ i ].Value = inputPlugValues[ i ];
+            }
+        }
 
         /// <summary>
         /// Initializes the basic gate.

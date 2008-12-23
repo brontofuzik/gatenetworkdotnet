@@ -45,11 +45,9 @@
     <Compile Include="Exceptions\MyException.cs" />
     <Compile Include="Gates\BasicGate.cs" />
     <Compile Include="Gates\CompositeGate.cs" />
-    <Compile Include="Gates\Connections\Connection.cs" />
-    <Compile Include="Gates\Connections\IConnection.cs" />
+    <Compile Include="Gates\Connection.cs" />
     <Compile Include="Gates\Gate.cs" />
-    <Compile Include="Gates\Plugs\IPlug.cs" />
-    <Compile Include="Gates\Plugs\Plug.cs" />
+    <Compile Include="Gates\Plug.cs" />
     <Compile Include="GateTypes\BasicGateType.cs" />
     <Compile Include="GateTypes\CompositeGateType.cs" />
     <Compile Include="GateTypes\GateType.cs" />

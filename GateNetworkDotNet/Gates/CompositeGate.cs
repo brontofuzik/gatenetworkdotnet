@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 
 using GateNetworkDotNet.GateTypes;
-using GateNetworkDotNet.Gates.Connections;
-using GateNetworkDotNet.Gates.Plugs;
 
 namespace GateNetworkDotNet.Gates
 {
@@ -188,14 +186,28 @@ namespace GateNetworkDotNet.Gates
                 connections[ connectionIndex++ ] = connection;
 
                 // Initialize the implicit input plugs.
-                GetInputPlugByName("0").Value = "0";
-                GetInputPlugByName("1").Value = "1";
+                GetInputPlugByName( "0" ).Value = "0";
+                GetInputPlugByName( "1" ).Value = "1";
             }
         }
 
         #endregion // Public instance constructors
 
         #region Public instance methods
+
+        /// <summary>
+        /// Sets the values of the input plugs.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugValues">The values of the input plugs.</param>
+        public override void SetInputPlugValues( string inputPlugValuesString )
+        {
+            string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
+            for (int i = 0; i < InputPlugCount - 2; i++)
+            {
+                InputPlugs[ i ].Value = inputPlugValues[ i ];
+            }
+        }
 
         /// <summary>
         /// Initializes the composite gate.

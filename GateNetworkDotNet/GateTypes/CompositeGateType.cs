@@ -4,8 +4,6 @@ using System.Text.RegularExpressions;
 
 using GateNetworkDotNet.Exceptions;
 using GateNetworkDotNet.Gates;
-using GateNetworkDotNet.Gates.Connections;
-using GateNetworkDotNet.Gates.Plugs;
 
 namespace GateNetworkDotNet.GateTypes
 {
@@ -45,6 +43,9 @@ namespace GateNetworkDotNet.GateTypes
 
         #region Public instance properties
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Dictionary< string, GateType > NestedGateTypes
         {
             get
@@ -68,6 +69,9 @@ namespace GateNetworkDotNet.GateTypes
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public Dictionary< string, string > Connections
         {
             get
@@ -168,7 +172,7 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentException">
         /// Condition: <c>inputPlugNames</c> contains an illegal input plug name.
         /// </exception>
-        public override void SetInputPlugNames( string inputPlugNamesString )
+        public override void SetInputPlugNames( string inputPlugNames )
         {
             if (constructionPhase != CompositeGateTypeConstructionPhase.INPUTS)
             {
@@ -176,7 +180,7 @@ namespace GateNetworkDotNet.GateTypes
                 throw new Exception();
             }
 
-            base.SetInputPlugNames( inputPlugNamesString + " " + implicitInputPlugNames );
+            base.SetInputPlugNames( inputPlugNames + " " + implicitInputPlugNames );
 
             constructionPhase = CompositeGateTypeConstructionPhase.OUTPUTS;
         }
@@ -184,8 +188,8 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="outputPlugNamesString"></param>
-        public override void SetOutputPlugNames(string outputPlugNamesString)
+        /// <param name="outputPlugNames"></param>
+        public override void SetOutputPlugNames (string outputPlugNames )
         {
             if (constructionPhase != CompositeGateTypeConstructionPhase.OUTPUTS)
             {
@@ -193,7 +197,7 @@ namespace GateNetworkDotNet.GateTypes
                 throw new Exception();
             }
 
-            base.SetOutputPlugNames( outputPlugNamesString );
+            base.SetOutputPlugNames( outputPlugNames );
 
             constructionPhase = CompositeGateTypeConstructionPhase.GATES;
         }

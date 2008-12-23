@@ -4,7 +4,6 @@ using System.Text;
 
 using GateNetworkDotNet.Exceptions;
 using GateNetworkDotNet.Gates;
-using GateNetworkDotNet.Gates.Plugs;
 
 namespace GateNetworkDotNet.GateTypes
 {
@@ -112,8 +111,8 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="inputPlugNamesString"></param>
-        public override void SetInputPlugNames(string inputPlugNamesString)
+        /// <param name="inputPlugNames"></param>
+        public override void SetInputPlugNames( string inputPlugNames )
         {
             if (constructionPhase != BasicGateTypeConstructionPhase.INPUTS)
             {
@@ -121,7 +120,7 @@ namespace GateNetworkDotNet.GateTypes
                 throw new Exception();
             }
 
-            base.SetInputPlugNames( inputPlugNamesString );
+            base.SetInputPlugNames( inputPlugNames );
 
             constructionPhase = BasicGateTypeConstructionPhase.OUTPUTS;
         }
@@ -129,8 +128,8 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="outputPlugNamesString"></param>
-        public override void SetOutputPlugNames(string outputPlugNamesString)
+        /// <param name="outputPlugNames"></param>
+        public override void SetOutputPlugNames( string outputPlugNames )
         {
             if (constructionPhase != BasicGateTypeConstructionPhase.OUTPUTS)
             {
@@ -138,7 +137,7 @@ namespace GateNetworkDotNet.GateTypes
                 throw new Exception();
             }
 
-            base.SetOutputPlugNames( outputPlugNamesString );
+            base.SetOutputPlugNames( outputPlugNames );
 
             constructionPhase = BasicGateTypeConstructionPhase.TRANSITIONS;
         }

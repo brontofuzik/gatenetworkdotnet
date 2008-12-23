@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 
 using GateNetworkDotNet.Exceptions;
-using GateNetworkDotNet.Gates.Plugs;
 using GateNetworkDotNet.GateTypes;
 
 namespace GateNetworkDotNet.Gates
@@ -16,7 +15,7 @@ namespace GateNetworkDotNet.Gates
         #region Private instance fields
 
         /// <summary>
-        /// The name of the gate.
+        /// The name of the (abstract) gate.
         /// </summary>
         private string name;
 
@@ -85,25 +84,6 @@ namespace GateNetworkDotNet.Gates
         }
 
         /// <summary>
-        /// Sets the values of the input plugs. 
-        /// </summary>
-        /// 
-        /// <value>
-        /// The values of the input plugs.
-        /// </value>
-        public string InputPlugValues
-        {
-            set
-            {
-                string[] inputPlugValues = value.Split( ' ' );
-                for (int i = 0; i < InputPlugCount; i++)
-                {
-                    inputPlugs[ i ].Value = inputPlugValues[ i ];
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets the output plugs.
         /// </summary>
         /// 
@@ -130,31 +110,6 @@ namespace GateNetworkDotNet.Gates
             get
             {
                 return type.OutputPlugCount;
-            }
-        }
-
-        /// <summary>
-        /// Gets the values of the output plugs.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The values of the output plugs.
-        /// </value>
-        public string OutputPlugValues
-        {
-            get
-            {
-                StringBuilder outputPlugValues = new StringBuilder();
-                for (int i = 0; i < OutputPlugCount; i++)
-                {
-                    outputPlugValues.Append( outputPlugs[ i ].Value + " " );
-                }
-                // Remove the trailing space character if necessary.
-                if (outputPlugValues.Length != 0)
-                {
-                    outputPlugValues.Remove( outputPlugValues.Length - 1, 1 );
-                }
-                return outputPlugValues.ToString();
             }
         }
 
@@ -211,17 +166,41 @@ namespace GateNetworkDotNet.Gates
         #region Public instance methods
 
         /// <summary>
+        /// Sets the values of the input plugs.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugValues">The values of the input plugs.</param>
+        public abstract void SetInputPlugValues( string inputPlugValues );
+
+        /// <summary>
+        /// Gets the values of the output plugs.
+        /// </summary>
+        /// 
+        /// <returns>
+        /// The values of the output plugs.
+        /// </returns>
+        public string GetOutputPlugValues()
+        {
+            StringBuilder outputPlugValues = new StringBuilder();
+            for (int i = 0; i < OutputPlugCount; i++)
+            {
+                outputPlugValues.Append( outputPlugs[ i ].Value + " " );
+            }
+            return outputPlugValues.ToString();
+        }
+
+        /// <summary>
         /// Gets an input plug specified by its name.
         /// </summary>
         /// 
-        /// <param name="name">The name of the input plug.</param>
+        /// <param name="inputPlugName">The name of the input plug.</param>
         /// 
         /// <returns>
         /// The input plug.
         /// </returns>
-        public Plug GetInputPlugByName( string name )
+        public Plug GetInputPlugByName( string inputPlugName )
         {
-            int inputPlugIndex = type.GetInputPlugIndex( name );
+            int inputPlugIndex = type.GetInputPlugIndex( inputPlugName );
             return (inputPlugIndex != -1) ? InputPlugs[ inputPlugIndex ] : null;
         }
 
@@ -229,14 +208,14 @@ namespace GateNetworkDotNet.Gates
         /// Gets an output plug specified by its name.
         /// </summary>
         /// 
-        /// <param name="name">The name of the output plug.</param>
+        /// <param name="outputPlugName">The name of the output plug.</param>
         /// 
         /// <returns>
         /// The output plug.
         /// </returns>
-        public Plug GetOutputPlugByName( string name )
+        public Plug GetOutputPlugByName( string outputPlugName )
         {
-            int outputPlugIndex = type.GetOutputPlugIndex( name );
+            int outputPlugIndex = type.GetOutputPlugIndex( outputPlugName );
             return (outputPlugIndex != -1) ? OutputPlugs[ outputPlugIndex ] : null;
         }
 
