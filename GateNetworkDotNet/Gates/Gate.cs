@@ -125,9 +125,10 @@ namespace GateNetworkDotNet.Gates
         /// <param name="type">The type of the gate.</param>
         /// 
         /// <exception cref="System.ArgumentNullException">
-        /// Condition: <c>type</c> is <c>null</c>.
+        /// Condition 1: <c>name</c> is <c>null</c>.
+        /// Condition 2: <c>type</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="System.ArgumentException">
+        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
         /// Condition: <c>name</c> is not a legal identifier.
         /// </exception>
         protected Gate( string name, GateType type )
@@ -166,37 +167,13 @@ namespace GateNetworkDotNet.Gates
         #region Public instance methods
 
         /// <summary>
-        /// Sets the values of the input plugs.
-        /// </summary>
-        /// 
-        /// <param name="inputPlugValues">The values of the input plugs.</param>
-        public abstract void SetInputPlugValues( string inputPlugValues );
-
-        /// <summary>
-        /// Gets the values of the output plugs.
-        /// </summary>
-        /// 
-        /// <returns>
-        /// The values of the output plugs.
-        /// </returns>
-        public string GetOutputPlugValues()
-        {
-            StringBuilder outputPlugValues = new StringBuilder();
-            for (int i = 0; i < OutputPlugCount; i++)
-            {
-                outputPlugValues.Append( outputPlugs[ i ].Value + " " );
-            }
-            return outputPlugValues.ToString();
-        }
-
-        /// <summary>
         /// Gets an input plug specified by its name.
         /// </summary>
         /// 
         /// <param name="inputPlugName">The name of the input plug.</param>
         /// 
         /// <returns>
-        /// The input plug.
+        /// The input plug (or <c>null</c> if such input plug does not exist).
         /// </returns>
         public Plug GetInputPlugByName( string inputPlugName )
         {
@@ -211,12 +188,75 @@ namespace GateNetworkDotNet.Gates
         /// <param name="outputPlugName">The name of the output plug.</param>
         /// 
         /// <returns>
-        /// The output plug.
+        /// The output plug (or <c>null</c> if such output plug does not exist).
         /// </returns>
         public Plug GetOutputPlugByName( string outputPlugName )
         {
             int outputPlugIndex = type.GetOutputPlugIndex( outputPlugName );
             return (outputPlugIndex != -1) ? OutputPlugs[ outputPlugIndex ] : null;
+        }
+
+        /// <summary>
+        /// Gets the values of the input plugs.
+        /// </summary>
+        /// 
+        /// <returns>
+        /// The values of the input plugs.
+        /// </returns>
+        public string GetInputPlugValues()
+        {
+            StringBuilder inputPlugValuesSB = new StringBuilder();
+            for (int i = 0; i < InputPlugCount; i++)
+            {
+                inputPlugValuesSB.Append( inputPlugs[i].Value + " " );
+            }
+            if (inputPlugValuesSB.Length != 0)
+            {
+                inputPlugValuesSB.Remove( inputPlugValuesSB.Length - 1, 1 );
+            }
+            return inputPlugValuesSB.ToString();
+        }
+
+        /// <summary>
+        /// Sets the values of the input plugs.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugValues">The values of the input plugs.</param>
+        public abstract void SetInputPlugValues( string inputPlugValuesString );
+
+        /// <summary>
+        /// Gets the values of the output plugs.
+        /// </summary>
+        /// 
+        /// <returns>
+        /// The values of the output plugs.
+        /// </returns>
+        public string GetOutputPlugValues()
+        {
+            StringBuilder outputPlugValuesSB = new StringBuilder();
+            for (int i = 0; i < OutputPlugCount; i++)
+            {
+                outputPlugValuesSB.Append( outputPlugs[ i ].Value + " " );
+            }
+            if (outputPlugValuesSB.Length != 0)
+            {
+                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+            }
+            return outputPlugValuesSB.ToString();
+        }
+
+        /// <summary>
+        /// Sets the values of the output plugs.
+        /// </summary>
+        /// 
+        /// <param name="outputPlugValues">The values of the output plugs.</param>
+        public void SetOutputPlugValues( string outputPlugValuesString )
+        {
+            string[] outputPlugValues = outputPlugValuesString.Split( ' ' );
+            for (int i = 0; i < OutputPlugCount; i++)
+            {
+                outputPlugs[ i ].Value = outputPlugValues[ i ];
+            }
         }
 
         /// <summary>

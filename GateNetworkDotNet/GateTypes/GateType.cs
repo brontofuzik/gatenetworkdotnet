@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 
+using GateNetworkDotNet.Exceptions;
 using GateNetworkDotNet.Gates;
 
 namespace GateNetworkDotNet.GateTypes
@@ -131,7 +132,7 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>name</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="System.ArgumentException">
+        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
         /// Condition: <c>name</c> is not a legal identifier.
         /// </exception>
         public virtual void SetName( string name )
@@ -143,9 +144,9 @@ namespace GateNetworkDotNet.GateTypes
             }
             if (!Program.IsLegalIdentifier( name ))
             {
-                throw new ArgumentException( "name" );
+                throw new MyException( 0, "Illegal identifier (" + name + ")." );
             }
-            this.name = name;    
+            this.name = name;
         }
 
         /// <summary>
@@ -157,22 +158,18 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>inputPlugNames</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="System.ArgumentException">
-        /// Condition: <c>inputPlugNames</c> contains an illegal input plug name.
-        /// </exception>
-        /// <exception cref="System.ArgumentException">
-        /// Condition: <c>inputPlugNames</c> contains duplicit input plug names.
+        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
+        /// Condition 1: <c>inputPlugNames</c> contains an illegal input plug name.
+        /// Condition 2: <c>inputPlugNames</c> contains duplicit input plug names.
         /// </exception>
         public virtual void SetInputPlugNames( string inputPlugNamesString )
         {
             // Validate the names of the input plugs.
-            // TODO: Validate the uniquness of every plug name.
             if (inputPlugNamesString == null)
             {
                 throw new ArgumentNullException( "inputPlugNames" );
             }
 
-            string[] inputPlugNames;
             if (inputPlugNamesString.Length != 0)
             {
                 // One or more input plug names.
@@ -182,11 +179,11 @@ namespace GateNetworkDotNet.GateTypes
                 {
                     if (!Program.IsLegalIdentifier( inputPlugName ))
                     {
-                        throw new ArgumentException( "inputPlugNames" );
+                        throw new MyException( 0, "Illegal identifier (" + inputPlugName + ")." );
                     }
                     if (inputPlugNamesCollection.Contains( inputPlugName ))
                     {
-                        throw new ArgumentException( "inputPlugNames" );
+                        throw new MyException( 0, "Duplicate (" + inputPlugName + ")." );
                     }
                     inputPlugNamesCollection.Add( inputPlugName );
                 }
@@ -196,7 +193,6 @@ namespace GateNetworkDotNet.GateTypes
                 // No input plug names.
                 inputPlugNames = new string[ 0 ];
             }
-            this.inputPlugNames = inputPlugNames;
         }
 
         /// <summary>
@@ -208,25 +204,19 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>outputPlugNames</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="System.ArgumentException">
-        /// Condition: <c>outputPlugNames</c> contains an illegal output plug name.
-        /// </exception>
-        /// <exception cref="">
-        /// Condition: <c>outputPlugNames</c> contains duplicit output plug names.
-        /// </exception>
-        /// <exception cref="System.ArgumentException">
-        /// Condition: <c>outputPlugNames</c> contains less than one output plug name.
+        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
+        /// Condition 1: <c>outputPlugNames</c> contains an illegal output plug name.
+        /// Condition 2: <c>outputPlugNames</c> contains duplicit output plug names.
+        /// Condition 3: <c>outputPlugNames</c> contains less than one output plug name.
         /// </exception>
         public virtual void SetOutputPlugNames( string outputPlugNamesString )
         {
             // Validate the names of the output plugs.
-            // TODO: Validate the uniquness of every output plug name.
             if (outputPlugNamesString == null)
             {
                 throw new ArgumentNullException( "outputPlugNames" );
             }
 
-            string[] outputPlugNames;
             if (outputPlugNamesString.Length != 0)
             {
                 // One or more output plug names.
@@ -236,11 +226,11 @@ namespace GateNetworkDotNet.GateTypes
                 {
                     if (!Program.IsLegalIdentifier( outputPlugName ))
                     {
-                        throw new ArgumentException(" outputPlugNames ");
+                        throw new MyException( 0, "Illegal identifier (" + outputPlugName + ")." );
                     }
                     if (outputPlugNamesCollection.Contains( outputPlugName ))
                     {
-                        throw new ArgumentException( "outputPlugNames" );
+                        throw new MyException( 0, "Duplicate (" + outputPlugName + ")." );
                     }
                     outputPlugNamesCollection.Add( outputPlugName );
                 }
@@ -248,9 +238,8 @@ namespace GateNetworkDotNet.GateTypes
             else
             {
                 // No output plug names.
-                throw new ArgumentException( "outputPlugNames" );
+                throw new MyException( 0, "Syntax error." );
             }
-            this.outputPlugNames = outputPlugNames;
         }
 
         public abstract void EndConstruction();
