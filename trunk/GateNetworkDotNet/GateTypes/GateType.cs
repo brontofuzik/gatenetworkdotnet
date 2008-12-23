@@ -256,19 +256,30 @@ namespace GateNetworkDotNet.GateTypes
         public abstract void EndConstruction();
 
         /// <summary>
+        /// Instantiates the (abstract) gate object.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the (abstract) gate object.</param>
+        /// 
+        /// <returns>
+        /// The (abstract) gate object.
+        /// </returns>
+        public abstract Gate Instantiate( string name );
+
+        /// <summary>
         /// Gets the index of an input plug specified by its name.
         /// </summary>
         /// 
-        /// <param name="name">The name of the input plug.</param>
+        /// <param name="inputPlugName">The name of the input plug.</param>
         /// 
         /// <returns>
         /// The index of the input plug.
         /// </returns>
-        public int GetInputPlugIndex( string name )
+        public int GetInputPlugIndex( string inputPlugName )
         {
             for (int i = 0; i < InputPlugCount; i++)
             {
-                if (inputPlugNames[ i ].Equals( name ))
+                if (inputPlugNames[ i ].Equals( inputPlugName ))
                 {
                     return i;
                 }
@@ -280,33 +291,22 @@ namespace GateNetworkDotNet.GateTypes
         /// Gets the index of an output plug specified by its name.
         /// </summary>
         /// 
-        /// <param name="name">The name of the output plug.</param>
+        /// <param name="outputPlugName">The name of the output plug.</param>
         /// 
         /// <returns>
         /// The index of the output plug.
         /// </returns>
-        public int GetOutputPlugIndex( string name )
+        public int GetOutputPlugIndex( string outputPlugName )
         {
             for (int i = 0; i < OutputPlugCount; i++)
             {
-                if (outputPlugNames[ i ].Equals( name ))
+                if (outputPlugNames[ i ].Equals( outputPlugName ))
                 {
                     return i;
                 }
             }
             return -1;
         }
-
-        /// <summary>
-        /// Instantiates the (abstract) gate object.
-        /// </summary>
-        /// 
-        /// <param name="name">The name of the (abstract) gate object.</param>
-        /// 
-        /// <returns>
-        /// The (abstract) gate object.
-        /// </returns>
-        public abstract Gate Instantiate( string name );
 
         #endregion // Public instance methods
     }

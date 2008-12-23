@@ -135,11 +135,11 @@ namespace GateNetworkDotNet
                 CompositeGate network = (CompositeGate)gateTypes[ "network" ].Instantiate( "network" );
                 network.Initialize();
 
-                network.InputPlugValues = "1 0";
+                network.SetInputPlugValues( "1 1" );
                 while (true)
                 {
                     network.Evaluate();
-                    Console.WriteLine( network.OutputPlugValues );
+                    Console.WriteLine( network.GetOutputPlugValues() );
                     Console.ReadKey();
                 }
             }
