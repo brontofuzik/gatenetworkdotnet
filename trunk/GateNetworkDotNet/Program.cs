@@ -69,7 +69,14 @@ namespace GateNetworkDotNet
                     {
                         throw new MyException( lineNumber, "Duplicate" );
                     }
-                    gateType.SetName( gateTypeName );
+                    try
+                    {
+                        gateType.SetName( gateTypeName );
+                    }
+                    catch (MyException e)
+                    {
+                        throw new MyException( lineNumber, e.Message ); 
+                    }
 
                     // TODO: Handle EOF eventuality.
                     while (!gateType.IsConstructed)
@@ -92,19 +99,40 @@ namespace GateNetworkDotNet
                         {
                             // Set the names of the input plugs.
                             string inputPlugNames = ParsePlugNames( line );
-                            gateType.SetInputPlugNames( inputPlugNames );
+                            try
+                            {
+                                gateType.SetInputPlugNames( inputPlugNames );
+                            }
+                            catch (MyException e)
+                            {
+                                throw new MyException( lineNumber, e.Message );
+                            }
                         }
                         else if (keyword.Equals( "outputs" ))
                         {
                             // Set the names of the output plugs.
                             string outputPlugNames = ParsePlugNames( line );
-                            gateType.SetOutputPlugNames( outputPlugNames );
+                            try
+                            {
+                                gateType.SetOutputPlugNames( outputPlugNames );
+                            }
+                            catch (MyException e)
+                            {
+                                throw new MyException( lineNumber, e.Message );
+                            }
                         }
                         else if (keyword.Equals( "gate" ))
                         {
                             // Set the nested gates.
                             string nestedGate = ParseNestedGate( line );
-                            (gateType as CompositeGateType).AddNestedGate( nestedGate, gateTypes );
+                            try
+                            {
+                                (gateType as CompositeGateType).AddNestedGate( nestedGate, gateTypes );
+                            }
+                            catch (MyException e)
+                            {
+                                throw new MyException( lineNumber, e.Message );
+                            }
                         }
                         else if (keyword.Equals( "end" ))
                         {
@@ -117,13 +145,27 @@ namespace GateNetworkDotNet
                             {
                                 // Set the transitions.
                                 string transition = ParseTransition( line );
-                                (gateType as BasicGateType).AddTransition( transition );
+                                try
+                                {
+                                    (gateType as BasicGateType).AddTransition( transition );
+                                }
+                                catch (MyException e)
+                                {
+                                    throw new MyException( lineNumber, e.Message );
+                                }
                             }
                             else
                             {
                                 // Set the connections.
                                 string connection = ParseConnection( line );
-                                (gateType as CompositeGateType).AddConnection( connection );
+                                try
+                                {
+                                    (gateType as CompositeGateType).AddConnection( connection );
+                                }
+                                catch (MyException e)
+                                {
+                                    throw new MyException( lineNumber, e.Message );
+                                }
                             }
                         }
                     }

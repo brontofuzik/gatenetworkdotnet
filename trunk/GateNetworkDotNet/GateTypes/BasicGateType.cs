@@ -92,94 +92,138 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>name</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="System.ArgumentException">
-        /// Condition: <c>name</c> is not a legal identifier.
+        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
+        /// Condition 1: TODO
+        /// Condition 2: <c>name</c> is not a legal identifier.
         /// </exception>
         public override void SetName( string name )
         {
+            // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.NAME)
             {
-                // TODO: Provide more specific exception.
-                throw new Exception();
+                throw new MyException( 0, "Missing keyword." );
             }
 
             base.SetName( name );
 
+            // Advance the phase of construction.
             constructionPhase = BasicGateTypeConstructionPhase.INPUTS;
         }
 
         /// <summary>
-        /// 
+        /// Sets the names of the input plugs.
         /// </summary>
-        /// <param name="inputPlugNames"></param>
+        /// 
+        /// <param name="inputPlugNames">The names of the input plugs.</param>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>inputPlugNames</c> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
+        /// Condition 1: TODO
+        /// Condition 2: <c>inputPlugNames</c> contains an illegal input plug name.
+        /// Condition 3: <c>inputPlugNames</c> contains duplicit input plug names.
+        /// </exception>
         public override void SetInputPlugNames( string inputPlugNames )
         {
+            // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.INPUTS)
             {
-                // TODO: Provide more specific exception.
-                throw new Exception();
+                throw new MyException( 0, "Missing keyword." );
             }
 
             base.SetInputPlugNames( inputPlugNames );
 
+            // Advance the phase of construction.
             constructionPhase = BasicGateTypeConstructionPhase.OUTPUTS;
         }
 
         /// <summary>
-        /// 
+        /// Sets the names of the output plugs.
         /// </summary>
-        /// <param name="outputPlugNames"></param>
+        /// 
+        /// <param name="outputPlugNames">The names of the output plugs.</param>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>outputPlugNames</c> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
+        /// Condition 1: TODO
+        /// Condition 2: <c>outputPlugNames</c> contains an illegal output plug name.
+        /// Condition 3: <c>outputPlugNames</c> contains duplicit output plug names.
+        /// Condition 4: <c>outputPlugNames</c> contains less than one output plug name.
+        /// </exception>
         public override void SetOutputPlugNames( string outputPlugNames )
         {
+            // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.OUTPUTS)
             {
-                // TODO: Provide more specific exception.
-                throw new Exception();
+                throw new MyException(0, "Missing keyword.");
             }
 
             base.SetOutputPlugNames( outputPlugNames );
 
+            // Advance the phase of construction.
             constructionPhase = BasicGateTypeConstructionPhase.TRANSITIONS;
         }
 
         /// <summary>
-        /// Adds a transition to the transitions
+        /// Adds a transition to the transitions.
         /// </summary>
         /// 
         /// <param name="transition">The transition.</param>
+        ///
+        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
+        /// Condition 1: TODO
+        /// Condition 2: <c>transition</c> is not a legal transition.
+        /// </exception>
         public void AddTransition( string transition )
         {
+            // Validate the phase of construciton.
             if (constructionPhase != BasicGateTypeConstructionPhase.TRANSITIONS)
             {
-                throw new Exception();
+                throw new MyException( 0, "Missing keyword." );
             }
 
-            // Split the transition line.
+            // Split the transition.
             string[] inputsAndOutputs = transition.Split( ' ' );
 
+            // Validate the transition.
             if (inputsAndOutputs.Length != TransitionLength)
             {
-                throw new IllegalTransitionException( transition );
+                throw new MyException( 0, "Syntax error." );
             }
 
-            // Build the inputs string.
-            StringBuilder inputsSB = new StringBuilder();
+            //
+            // Build the string containing the values of the input strings.
+            //
+            StringBuilder inputPlugValuesSB = new StringBuilder();
             for (int i = 0; i < InputPlugCount; i++)
             {
-                inputsSB.Append( inputsAndOutputs[ i ] );
+                inputPlugValuesSB.Append( inputsAndOutputs[ i ] + " " );
             }
-            string inputs = inputsSB.ToString();
+            if (inputPlugValuesSB.Length != 0)
+            {
+                inputPlugValuesSB.Remove( inputPlugValuesSB.Length - 1, 1 );
+            }
+            string inputPlugValues = inputPlugValuesSB.ToString();
 
-            // Build the outputs string.
-            StringBuilder outputsSB = new StringBuilder();
+            //
+            // Build the string containing the values of the output strings.
+            //
+            StringBuilder outputPlugValuesSB = new StringBuilder();
             for (int i = InputPlugCount; i < TransitionLength; i++)
             {
-                outputsSB.Append( inputsAndOutputs[ i ] );
+                outputPlugValuesSB.Append( inputsAndOutputs[ i ] + " " );
             }
-            string outputs = outputsSB.ToString();
+            if (outputPlugValuesSB.Length != 0)
+            {
+                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+            }
+            string outputPlugValues = outputPlugValuesSB.ToString();
 
-            // Add the (inputs, outputs) key-value-pair into the dictionary.
-            transitions.Add( inputs, outputs );
+            // Add the (inputPlugValues, outputPlugValues) key-value-pair into the transitions.
+            transitions.Add( inputPlugValues, outputPlugValues );
         }
 
         /// <summary>
@@ -205,21 +249,16 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// Evaluates the transition function of the abstract gate type.
+        /// 
         /// </summary>
-        /// <param name="inputPlugs">The input plugs.</param>
-        /// <param name="outputPlugs">The output plugs.</param>
-        public void Evaluate( Plug[] inputPlugs, Plug[] outputPlugs )
+        /// 
+        /// <param name="inputPlugValues">The values of the input plugs.</param>
+        /// 
+        /// <returns>
+        /// The values of the output plugs.
+        /// </returns>
+        public string Evaluate( string inputPlugValues )
         {
-            // Get the values of the input plugs.
-            StringBuilder inputPlugValuesSB = new StringBuilder();
-            for (int i = 0; i < InputPlugCount; i++)
-            {
-                inputPlugValuesSB.Append( inputPlugs[ i ].Value );
-            }
-            string inputPlugValues = inputPlugValuesSB.ToString();
-
-            // Get the outputs.
             // TODO: Think about replacing the following piece of code with TryGetMethod.
             string outputPlugValues;
             try
@@ -230,16 +269,18 @@ namespace GateNetworkDotNet.GateTypes
             catch (KeyNotFoundException e)
             {
                 // The transition fucntion does not contain the mapping for the inputs, hence implicit mapping is used.
-                outputPlugValues = (inputPlugValues.Contains( "?" )) ?
-                    new String( '?', OutputPlugCount ) :
-                    new String( '0', OutputPlugCount );
+                string outputPlugValue = inputPlugValues.Contains( "?" ) ? "?" : "0";
+                StringBuilder outputPlugValuesSB = new StringBuilder();
+                for (int i = 0; i < OutputPlugCount; i++)
+                {
+                    outputPlugValuesSB.Append( outputPlugValue + " " );
+                }
+                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+                outputPlugValues = outputPlugValuesSB.ToString();
             }
 
-            // Set the values of the output plugs.
-            for (int i = 0; i < OutputPlugCount; i++)
-            {
-                outputPlugs[ i ].Value = outputPlugValues.Substring( i, 1 );
-            }
+            // Return the values of the output plugs.
+            return outputPlugValues;
         }
         #endregion // Public instance methods
     }

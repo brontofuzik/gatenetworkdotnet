@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 using GateNetworkDotNet.GateTypes;
 
@@ -73,7 +74,7 @@ namespace GateNetworkDotNet.Gates
             }
             this.type = type;
 
-            // The newly created basic gate is not evaluated.
+            // The newly constructed basic gate is not yet evaluated.
             isEvaluated = false;
         }
 
@@ -106,10 +107,17 @@ namespace GateNetworkDotNet.Gates
             }
             else
             {
-                foreach (Plug outputPlug in OutputPlugs)
+                StringBuilder outputPlugValuesSB = new StringBuilder();
+                for (int i = 0; i < OutputPlugCount; i++)
                 {
-                    outputPlug.Value = "?";
+                    outputPlugValuesSB.Append("?" + " ");
                 }
+                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+                string outputPlugValues = outputPlugValuesSB.ToString();
+
+                SetOutputPlugValues( outputPlugValues );
+
+                isEvaluated = false;
             }
         }
 
@@ -120,7 +128,10 @@ namespace GateNetworkDotNet.Gates
         {
             if (!isEvaluated)
             {
-                type.Evaluate( InputPlugs, OutputPlugs );
+                string inputPlugValues = GetInputPlugValues();
+                string outputPlugValues = type.Evaluate( inputPlugValues );
+                SetOutputPlugValues( outputPlugValues );
+                
                 isEvaluated = true;
             }
         }

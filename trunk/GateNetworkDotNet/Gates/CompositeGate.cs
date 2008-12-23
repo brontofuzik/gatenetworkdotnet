@@ -184,10 +184,6 @@ namespace GateNetworkDotNet.Gates
                 targetPlug.PlugSourceConnection( connection );
 
                 connections[ connectionIndex++ ] = connection;
-
-                // Initialize the implicit input plugs.
-                GetInputPlugByName( "0" ).Value = "0";
-                GetInputPlugByName( "1" ).Value = "1";
             }
         }
 
