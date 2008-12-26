@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+using GateNetworkDotNet.Exceptions;
 using GateNetworkDotNet.GateTypes;
 
 namespace GateNetworkDotNet.Gates
@@ -63,6 +64,11 @@ namespace GateNetworkDotNet.Gates
         public override void SetInputPlugValues(string inputPlugValuesString )
         {
             string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
+            if (inputPlugValues.Length != InputPlugCount)
+            {
+                throw new MyException( "Syntax error." );
+            }
+
             for (int i = 0; i < InputPlugCount; i++)
             {
                 InputPlugs[ i ].Value = inputPlugValues[ i ];

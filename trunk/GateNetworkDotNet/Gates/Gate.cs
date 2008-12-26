@@ -134,7 +134,7 @@ namespace GateNetworkDotNet.Gates
         protected Gate( string name, GateType type )
         {
             // Validate the name.
-            if (!Program.IsLegalIdentifier( name ))
+            if (!Program.IsLegalName( name ))
             {
                 throw new ArgumentException( name );
             }
@@ -277,40 +277,6 @@ namespace GateNetworkDotNet.Gates
         /// Evaluates the (abstract) gate.
         /// </summary>
         public abstract void UpdateOutputPlugValues();
-
-        /// <summary>
-        /// Evaluates the (abstract) gate.
-        /// </summary>
-        /// 
-        /// <param name="inputPlugValues">The values of the input plugs.</param>
-        /// 
-        /// <returns>
-        /// The computation time (in cycles) and the values of the output plugs.
-        /// </returns>
-        public string Evaluate(string inputPlugValues)
-        {
-            SetInputPlugValues(inputPlugValues);
-            bool updatePerformed = true;
-
-            int cycles = 0;
-            while (cycles < 1000000)
-            {
-                // Update the values of the input plugs.
-                updatePerformed = UpdateInputPlugValues();
-
-                if (!updatePerformed)
-                {
-                    break;
-                }
-
-                // Update the values of the output plugs.
-                UpdateOutputPlugValues();
-
-                cycles++;
-            }
-
-            return cycles + " " + GetOutputPlugValues();
-        }
 
         #endregion // Public instance methods
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
+using GateNetworkDotNet.Exceptions;
 using GateNetworkDotNet.GateTypes;
 
 namespace GateNetworkDotNet.Gates
@@ -206,6 +207,11 @@ namespace GateNetworkDotNet.Gates
         public override void SetInputPlugValues( string inputPlugValuesString )
         {
             string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
+            if (inputPlugValues.Length != InputPlugCount - 2)
+            {
+                throw new MyException( "Syntax error." );
+            }
+
             for (int i = 0; i < InputPlugCount - 2; i++)
             {
                 InputPlugs[ i ].Value = inputPlugValues[ i ];
@@ -259,6 +265,40 @@ namespace GateNetworkDotNet.Gates
             {
                 outputPlug.UpdatePlugValue();
             }
+        }
+
+        /// <summary>
+        /// Evaluates the (abstract) gate.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugValues">The values of the input plugs.</param>
+        /// 
+        /// <returns>
+        /// The computation time (in cycles) and the values of the output plugs.
+        /// </returns>
+        public string Evaluate(string inputPlugValues)
+        {
+            SetInputPlugValues(inputPlugValues);
+            bool updatePerformed = true;
+
+            int cycles = 0;
+            while (cycles < 1000000)
+            {
+                // Update the values of the input plugs.
+                updatePerformed = UpdateInputPlugValues();
+
+                if (!updatePerformed)
+                {
+                    break;
+                }
+
+                // Update the values of the output plugs.
+                UpdateOutputPlugValues();
+
+                cycles++;
+            }
+
+            return cycles + " " + GetOutputPlugValues();
         }
 
         #endregion // Public instance methods

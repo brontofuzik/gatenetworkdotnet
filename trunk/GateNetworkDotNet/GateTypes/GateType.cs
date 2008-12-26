@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 
 using GateNetworkDotNet.Exceptions;
@@ -121,7 +122,121 @@ namespace GateNetworkDotNet.GateTypes
 
         #endregion // Public instance properties
 
+        #region Public static methods
+
+        /// <summary>
+        /// Parses a line for a gate type.
+        /// </summary>
+        /// 
+        /// <param name="line">The line.</param>
+        /// 
+        /// <returns>
+        /// The type of the gate.
+        /// </returns>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>line</c> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
+        /// Condition 1: <c>line</c> 
+        /// </exception>
+        public static GateType ParseGateType(string line)
+        {
+            // Validate the line.
+            if (line == null)
+            {
+                throw new ArgumentNullException(line);
+            }
+
+            GateType gateType;
+            string[] gateTypeClassAndName = line.Split(' ');
+            switch (gateTypeClassAndName.Length)
+            {
+                case 1:
+
+                    // Network construction.
+                    if (gateTypeClassAndName[0].Equals("network"))
+                    {
+                        gateType = new CompositeGateType();
+                    }
+                    else
+                    {
+                        throw new MyException("Syntax error.");
+                    }
+                    gateType.SetName("network");
+                    break;
+
+                case 2:
+
+                    // Basic or composite gate construction.
+                    if (gateTypeClassAndName[0].Equals("gate"))
+                    {
+                        // Basic gate construction.
+                        gateType = new BasicGateType();
+                    }
+                    else if (gateTypeClassAndName[0].Equals("composite"))
+                    {
+                        // Composite gate construction.
+                        gateType = new CompositeGateType();
+                    }
+                    else
+                    {
+                        // Syntax error.
+                        throw new MyException("Syntax error.");
+                    }
+                    gateType.SetName(gateTypeClassAndName[1]);
+                    break;
+
+                default:
+
+                    // Syntax error.
+                    throw new MyException("Syntax error.");
+                    break;
+            }
+            return gateType;
+        }
+
+        #endregion // Public static methods
+
         #region Public instance mehods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="gateTypes"></param>
+        public abstract void Configure( string line, Dictionary< string, GateType > gateTypes );
+
+        /// <summary>
+        /// Parses a line for a keyword.
+        /// Keyword is the first word in a line, i.e. the sequence of characters before the first space character,
+        /// or the entire line if the line contains no space character.
+        /// </summary>
+        /// 
+        /// <param name="line">The line.</param>
+        /// 
+        /// <returns>
+        /// The keyword.
+        /// </returns>
+        public string ParseKeyword(string line)
+        {
+            return (line.IndexOf(' ') != -1) ? line.Substring(0, line.IndexOf(' ')) : line;
+        }
+
+
+        /// <summary>
+        /// Parse a line for names of (input or output) plugs.
+        /// </summary>
+        /// 
+        /// <param name="line">The line.</param>
+        /// 
+        /// <returns>
+        /// The names of the (input or output) plugs.
+        /// </returns>
+        public string ParsePlugNames(string line)
+        {
+            return (line.IndexOf(' ') != -1) ? line.Substring(line.IndexOf(' ') + 1) : "";
+        }
 
         /// <summary>
         /// Sets the name of the (abstract) gate type.
@@ -142,7 +257,7 @@ namespace GateNetworkDotNet.GateTypes
             {
                 throw new ArgumentNullException( "name" );
             }
-            if (!Program.IsLegalIdentifier( name ))
+            if (!Program.IsLegalName( name ))
             {
                 throw new MyException( "Syntax error (" + name + ")." );
             }
@@ -177,7 +292,7 @@ namespace GateNetworkDotNet.GateTypes
                 inputPlugNames = inputPlugNamesString.Split( ' ' );
                 foreach (string inputPlugName in inputPlugNames)
                 {
-                    if (!Program.IsLegalIdentifier( inputPlugName ))
+                    if (!Program.IsLegalName( inputPlugName ))
                     {
                         throw new MyException( "Syntax error (" + inputPlugName + ")." );
                     }
@@ -224,7 +339,7 @@ namespace GateNetworkDotNet.GateTypes
                 outputPlugNames = outputPlugNamesString.Split( ' ' );
                 foreach (string outputPlugName in outputPlugNames)
                 {
-                    if (!Program.IsLegalIdentifier( outputPlugName ))
+                    if (!Program.IsLegalName( outputPlugName ))
                     {
                         throw new MyException( "Syntax error (" + outputPlugName + ")." );
                     }
@@ -297,6 +412,6 @@ namespace GateNetworkDotNet.GateTypes
             return -1;
         }
 
-        #endregion // Public instance methods
+        #endregion // Public instance methods       
     }
 }
