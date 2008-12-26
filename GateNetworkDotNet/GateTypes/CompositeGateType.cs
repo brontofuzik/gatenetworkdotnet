@@ -153,7 +153,7 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.NAME)
             {
-                throw new MyException( 0, "Missing keyword." );
+                throw new MyException( "Missing keyword." );
             }
 
             base.SetName( name );
@@ -181,7 +181,7 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.INPUTS)
             {
-                throw new MyException( 0, "Missing keyword." );
+                throw new MyException( "Missing keyword." );
             }
 
             base.SetInputPlugNames( inputPlugNames + " " + implicitInputPlugNames );
@@ -210,7 +210,7 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.OUTPUTS)
             {
-                throw new MyException( 0, "Missing keyword." );
+                throw new MyException( "Missing keyword." );
             }
 
             base.SetOutputPlugNames( outputPlugNames );
@@ -240,7 +240,7 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.GATES)
             {
-                throw new MyException( 0, "Missing keyword." );
+                throw new MyException( "Missing keyword." );
             }
 
             // Validate the nested gate string.
@@ -248,11 +248,16 @@ namespace GateNetworkDotNet.GateTypes
             {
                 throw new ArgumentNullException( "nestedGate" );
             }
+            // Validate the types of gates.
+            if (gateTypes == null)
+            {
+                throw new ArgumentNullException( "gateTypes" );
+            }
 
             string[] nestedGateNameAndType = nestedGate.Split( ' ' );
             if (nestedGateNameAndType.Length != 2)
             {
-                throw new MyException( 0, "Syntax error." );
+                throw new MyException( "Syntax error (" + nestedGate + ")." );
             }
             
             //
@@ -263,27 +268,29 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the legality of the name of the nested gate.
             if (!Program.IsLegalIdentifier( nestedGateName ))
             {
-                throw new MyException( 0, "Illegal identifier (" + nestedGateName + ")." );
+                throw new MyException( "Syntax error (" + nestedGateName + ")." );
             }
             // Validate the uniqueness of the name of the nested gate.
             if (nestedGateTypes.ContainsKey( nestedGateName ))
             {
-                throw new MyException( 0, "Duplicate (" + nestedGateName + ")." );
+                throw new MyException( "Duplicate (" + nestedGateName + ")." );
             }
 
             //
             // Validate the type of the nested gate.
             //
             string nestedGateTypeString = nestedGateNameAndType[ 1 ];
-            
-            // Validate the availability of the type of the nested gate.
-            if (!gateTypes.ContainsKey( nestedGateTypeString ))
-            {
-                throw new MyException( 0, "Unknown gate type (" + nestedGateTypeString + ")." );
-            }
 
             // Retrieve the type of the nested gate.
-            GateType nestedGateType = gateTypes[ nestedGateTypeString ];
+            GateType nestedGateType;
+            try
+            {
+                nestedGateType = gateTypes[ nestedGateTypeString ];
+            }
+            catch (KeyNotFoundException)
+            {
+                throw new MyException( "Syntax error (" + nestedGateTypeString + ")." );
+            }
 
             // Store the nested gate.
             nestedGateTypes.Add( nestedGateName, nestedGateType );
@@ -313,13 +320,13 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.CONNECTIONS)
             {
-                throw new MyException( 0, "Missing keyword." );
+                throw new MyException( "Missing keyword." );
             }
 
             string[] connectionToAndFrom = Regex.Split( connection, "->" );
             if (connectionToAndFrom.Length != 2)
             {
-                throw new MyException( 0, "Syntax error." );
+                throw new MyException( "Syntax error (" + connection + ")." );
             }
 
             // TODO:
@@ -327,10 +334,15 @@ namespace GateNetworkDotNet.GateTypes
             //
             string connectionTo = connectionToAndFrom[ 0 ];
 
+            if (connections.ContainsKey(connectionTo))
+            {
+                throw new MyException( "Duplicate (" + connection + ")." );
+            }
+
             // TODO:
             // Validate the startpoint of the connection.
             //
-            string connectionFrom = connectionToAndFrom[1];
+            string connectionFrom = connectionToAndFrom[ 1 ];
 
             // Store the connection.
             connections.Add( connectionTo, connectionFrom );

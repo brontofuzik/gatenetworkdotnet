@@ -18,7 +18,7 @@ namespace GateNetworkDotNet.Gates
         /// <summary>
         /// The input connection plugged into the plug.
         /// </summary>
-        private List< Connection > sourceConnections;
+        private Connection sourceConnection;
 
         /// <summary>
         /// The output connections plugged into the plug.
@@ -49,54 +49,7 @@ namespace GateNetworkDotNet.Gates
             }
             set
             {
-                // If the new value of the plug is different from the old one, ...
-                if (this.value != value)
-                {
-                    // ... update the value of the plug, ...
-                    this.value = value;
-                    // ... and trasmit the new value through the target connections into the target plugs.
-                    foreach (Connection targetConnection in targetConnections)
-                    {
-                        targetConnection.Transmit();
-                    }
-
-                    // If the parent gate of the plug is a basic gate, ...
-                    if (parentGate is BasicGate)
-                    {
-                        // ... it needs to be re-evaluated.
-                        (parentGate as BasicGate).IsEvaluated = false;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the number of source connections plugged into the plug.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The number of source connections plugged into the plug.
-        /// </value>
-        public int SourceConnectionCount
-        {
-            get
-            {
-                return sourceConnections.Count;
-            }
-        }
-
-        /// <summary>
-        /// Gets the number of target connections plugged into the plug.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The number of target connections plugged into the plug.
-        /// </value>
-        public int TargetConnectionCount
-        {
-            get
-            {
-                return targetConnections.Count;
+                this.value = value;
             }
         }
 
@@ -107,11 +60,15 @@ namespace GateNetworkDotNet.Gates
         /// <summary>
         /// Creates a new plug.
         /// </summary>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>parentGate</c> is <c>null</c>.
+        /// </exception>
         public Plug( Gate parentGate )
         {
             value = "?";
 
-            sourceConnections = new List< Connection >();
+            sourceConnection = null;
             targetConnections = new List< Connection >();
 
             if (parentGate == null)
@@ -129,27 +86,52 @@ namespace GateNetworkDotNet.Gates
         /// Plugs a source connection into the plug.
         /// </summary>
         /// 
-        /// <param name="connection">The source connection.</param>
-        public void PlugSourceConnection( Connection connection )
+        /// <param name="sourceConnection">The source connection.</param>
+        public void PlugSourceConnection( Connection sourceConnection )
         {
-            if (SourceConnectionCount == 1)
+            if (this.sourceConnection != null)
             {
                 // TODO: Provide more specific exception.
                 throw new Exception();
             }
-            sourceConnections.Add( connection );
-            connection.TargetPlug = this;
+            this.sourceConnection = sourceConnection;
+            
+            sourceConnection.TargetPlug = this;
         }
 
         /// <summary>
         /// Plugs a target connecion into the plug.
         /// </summary>
         /// 
-        /// <param name="connection">The target connection.</param>
-        public void PlugTargetConnection(Connection connection)
+        /// <param name="targetConnection">The target connection.</param>
+        public void PlugTargetConnection( Connection targetConnection )
         {
-            targetConnections.Add( connection );
-            connection.SourcePlug = this;
+            targetConnections.Add( targetConnection );
+            
+            targetConnection.SourcePlug = this;
+        }
+
+        /// <summary>
+        /// Updates the value of the (input or output) plug.
+        /// </summary>
+        public bool UpdatePlugValue()
+        {
+            if (sourceConnection != null)
+            {
+                if (value != sourceConnection.SourcePlug.Value)
+                {
+                    value = sourceConnection.SourcePlug.Value;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
         }
 
         #endregion // Public instance methods

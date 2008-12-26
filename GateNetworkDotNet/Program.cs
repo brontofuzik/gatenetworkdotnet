@@ -23,8 +23,6 @@ namespace GateNetworkDotNet
                 // The dictionary of (known) gate types.
                 Dictionary< string, GateType > gateTypes = new Dictionary< string, GateType >();
 
-                GateType gateType;
-
                 // Loop invariant:
                 // "line" contains the most recently read line.
                 // "lineNumber" is the number of already read lines.
@@ -32,54 +30,7 @@ namespace GateNetworkDotNet
                 int lineNumber = 0;
                 while (true)
                 {
-                    line = streamReader.ReadLine();
-                    lineNumber++;
-                    if (line == null)
-                    {
-                        break;
-                    }
-                    if (IsIgnorableLine( line ))
-                    {
-                        continue;
-                    }
-                    //line = line.Trim();
-
-                    string gateTypeClass = ParseKeyword( line );
-                    
-                    if (gateTypeClass.Equals( "gate" ))
-                    {
-                        gateType = new BasicGateType();
-                    }
-                    else if (gateTypeClass.Equals( "composite" ))
-                    {
-                        gateType = new CompositeGateType();
-                    }
-                    else if (gateTypeClass.Equals( "network" ))
-                    {
-                        gateType = new CompositeGateType();
-                    }
-                    else
-                    {
-                        throw new MyException( lineNumber, "Syntax error" );
-                    }
-
-                    // Set the name of the gate type.
-                    string gateTypeName = ParseName( line );
-                    if (gateTypes.ContainsKey( gateTypeName ))
-                    {
-                        throw new MyException( lineNumber, "Duplicate" );
-                    }
                     try
-                    {
-                        gateType.SetName( gateTypeName );
-                    }
-                    catch (MyException e)
-                    {
-                        throw new MyException( lineNumber, e.Message ); 
-                    }
-
-                    // TODO: Handle EOF eventuality.
-                    while (!gateType.IsConstructed)
                     {
                         line = streamReader.ReadLine();
                         lineNumber++;
@@ -93,97 +44,100 @@ namespace GateNetworkDotNet
                         }
                         //line = line.Trim();
 
-                        string keyword = ParseKeyword( line );
+                        string gateTypeClass = ParseKeyword( line );
 
-                        if (keyword.Equals( "inputs" ))
+                        GateType gateType;
+                        if (gateTypeClass.Equals( "gate" ))
                         {
-                            // Set the names of the input plugs.
-                            string inputPlugNames = ParsePlugNames( line );
-                            try
-                            {
-                                gateType.SetInputPlugNames( inputPlugNames );
-                            }
-                            catch (MyException e)
-                            {
-                                throw new MyException( lineNumber, e.Message );
-                            }
+                            gateType = new BasicGateType();
                         }
-                        else if (keyword.Equals( "outputs" ))
+                        else if (gateTypeClass.Equals( "composite" ) || gateTypeClass.Equals( "network" ))
                         {
-                            // Set the names of the output plugs.
-                            string outputPlugNames = ParsePlugNames( line );
-                            try
-                            {
-                                gateType.SetOutputPlugNames( outputPlugNames );
-                            }
-                            catch (MyException e)
-                            {
-                                throw new MyException( lineNumber, e.Message );
-                            }
-                        }
-                        else if (keyword.Equals( "gate" ))
-                        {
-                            // Set the nested gates.
-                            string nestedGate = ParseNestedGate( line );
-                            try
-                            {
-                                (gateType as CompositeGateType).AddNestedGate( nestedGate, gateTypes );
-                            }
-                            catch (MyException e)
-                            {
-                                throw new MyException( lineNumber, e.Message );
-                            }
-                        }
-                        else if (keyword.Equals( "end" ))
-                        {
-                            // End the construction process.
-                            gateType.EndConstruction();
+                            gateType = new CompositeGateType();
                         }
                         else
                         {
-                            if (gateTypeClass.Equals( "gate" ))
+                            throw new MyException( "Syntax error (" + gateTypeClass + ")." );
+                        }
+
+                        // Set the name of the gate type.
+                        string gateTypeName = ParseName( line );
+                        if (gateTypes.ContainsKey( gateTypeName ))
+                        {
+                            throw new MyException( "Duplicate (" + gateTypeName + ")." );
+                        }
+                        gateType.SetName( gateTypeName );
+
+                        // TODO: Handle EOF eventuality.
+                        while (!gateType.IsConstructed)
+                        {
+                            line = streamReader.ReadLine();
+                            lineNumber++;
+                            if (line == null)
                             {
-                                // Set the transitions.
-                                string transition = ParseTransition( line );
-                                try
-                                {
-                                    (gateType as BasicGateType).AddTransition( transition );
-                                }
-                                catch (MyException e)
-                                {
-                                    throw new MyException( lineNumber, e.Message );
-                                }
+                                break;
+                            }
+                            if (IsIgnorableLine( line ))
+                            {
+                                continue;
+                            }
+                            //line = line.Trim();
+
+                            string keyword = ParseKeyword( line );
+
+                            if (keyword.Equals( "inputs" ))
+                            {
+                                // Set the names of the input plugs.
+                                string inputPlugNames = ParsePlugNames( line );
+                                gateType.SetInputPlugNames( inputPlugNames );
+                            }
+                            else if (keyword.Equals( "outputs" ))
+                            {
+                                // Set the names of the output plugs.
+                                string outputPlugNames = ParsePlugNames( line );
+                                gateType.SetOutputPlugNames( outputPlugNames );
+                            }
+                            else if (keyword.Equals( "gate" ))
+                            {
+                                // Set the nested gates.
+                                string nestedGate = ParseNestedGate( line );
+                                (gateType as CompositeGateType).AddNestedGate( nestedGate, gateTypes );
+                            }
+                            else if (keyword.Equals( "end" ))
+                            {
+                                // End the construction process.
+                                gateType.EndConstruction();
                             }
                             else
                             {
-                                // Set the connections.
-                                string connection = ParseConnection( line );
-                                try
+                                if (gateTypeClass.Equals( "gate" ))
                                 {
-                                    (gateType as CompositeGateType).AddConnection( connection );
+                                    // Set the transitions.
+                                    string transition = ParseTransition( line );
+                                    (gateType as BasicGateType).AddTransition( transition );
                                 }
-                                catch (MyException e)
+                                else
                                 {
-                                    throw new MyException( lineNumber, e.Message );
+                                    // Set the connections.
+                                    string connection = ParseConnection( line );
+                                    (gateType as CompositeGateType).AddConnection( connection );
                                 }
                             }
                         }
+
+                        gateTypes.Add( gateTypeName, gateType );
                     }
-
-                    gateTypes.Add( gateTypeName, gateType );
+                    catch (MyException e)
+                    {
+                        throw new MyException( lineNumber, e.Message );
+                    }
                 }
 
-                // Create the gate network.
-                CompositeGate network = (CompositeGate)gateTypes[ "network" ].Instantiate( "network" );
+                // Network.
+                CompositeGate network = (CompositeGate)gateTypes["network"].Instantiate("network");
                 network.Initialize();
-
-                network.SetInputPlugValues( "1 1" );
-                while (true)
-                {
-                    network.Evaluate();
-                    Console.WriteLine( network.GetOutputPlugValues() );
-                    Console.ReadKey();
-                }
+                Console.WriteLine(network.Evaluate("1"));
+                Console.WriteLine(network.Evaluate("1"));
             }
             catch (MyException e)
             {
@@ -191,15 +145,15 @@ namespace GateNetworkDotNet
             }
             catch (FileNotFoundException e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine( e.Message );
             }
             catch (DirectoryNotFoundException e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine( e.Message );
             }
             catch (IOException e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine( e.Message );
             }
             finally
             {
@@ -237,6 +191,10 @@ namespace GateNetworkDotNet
         /// </returns>
         public static string ParseName( string line )
         {
+            if (line.IndexOf( ' ' ) == -1)
+            {
+                throw new MyException( "Syntax error." );
+            }
             return line.Substring( line.IndexOf( ' ' ) + 1 );
         }
 
@@ -309,7 +267,7 @@ namespace GateNetworkDotNet
         {
             // TODO: Provide implementation.
             string legalIdentifierPattern = @"^(.*)$";
-            string illegalIdentifierPattern = @"^(|end.*)$";
+            //string illegalIdentifierPattern = @"^(|end.*)$";
             Regex legalIdentifierRegex = new Regex(legalIdentifierPattern);
 
             return legalIdentifierRegex.IsMatch(identifier);

@@ -101,7 +101,7 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.NAME)
             {
-                throw new MyException( 0, "Missing keyword." );
+                throw new MyException( "Missing keyword." );
             }
 
             base.SetName( name );
@@ -129,7 +129,7 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.INPUTS)
             {
-                throw new MyException( 0, "Missing keyword." );
+                throw new MyException( "Missing keyword." );
             }
 
             base.SetInputPlugNames( inputPlugNames );
@@ -158,7 +158,7 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.OUTPUTS)
             {
-                throw new MyException(0, "Missing keyword.");
+                throw new MyException( "Missing keyword." );
             }
 
             base.SetOutputPlugNames( outputPlugNames );
@@ -182,7 +182,7 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the phase of construciton.
             if (constructionPhase != BasicGateTypeConstructionPhase.TRANSITIONS)
             {
-                throw new MyException( 0, "Missing keyword." );
+                throw new MyException( "Missing keyword." );
             }
 
             // Split the transition.
@@ -191,7 +191,7 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the transition.
             if (inputsAndOutputs.Length != TransitionLength)
             {
-                throw new MyException( 0, "Syntax error." );
+                throw new MyException( "Syntax error (" + transition + ")." );
             }
 
             //
@@ -207,6 +207,11 @@ namespace GateNetworkDotNet.GateTypes
                 inputPlugValuesSB.Remove( inputPlugValuesSB.Length - 1, 1 );
             }
             string inputPlugValues = inputPlugValuesSB.ToString();
+
+            if (transitions.ContainsKey( inputPlugValues ))
+            {
+                throw new MyException( "Duplicate (" + transition + ")." );
+            }
 
             //
             // Build the string containing the values of the output strings.
@@ -266,7 +271,7 @@ namespace GateNetworkDotNet.GateTypes
                 // The transition function contains the mapping for the inputs.
                 outputPlugValues = transitions[ inputPlugValues ];
             }
-            catch (KeyNotFoundException e)
+            catch (KeyNotFoundException)
             {
                 // The transition fucntion does not contain the mapping for the inputs, hence implicit mapping is used.
                 string outputPlugValue = inputPlugValues.Contains( "?" ) ? "?" : "0";

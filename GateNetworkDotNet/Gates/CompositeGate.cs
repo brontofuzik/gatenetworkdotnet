@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 using GateNetworkDotNet.GateTypes;
 
@@ -185,6 +186,12 @@ namespace GateNetworkDotNet.Gates
 
                 connections[ connectionIndex++ ] = connection;
             }
+
+            //
+            //
+            //
+            GetInputPlugByName( "0" ).Value = "0";
+            GetInputPlugByName( "1" ).Value = "1";
         }
 
         #endregion // Public instance constructors
@@ -195,7 +202,7 @@ namespace GateNetworkDotNet.Gates
         /// Sets the values of the input plugs.
         /// </summary>
         /// 
-        /// <param name="inputPlugValues">The values of the input plugs.</param>
+        /// <param name="inputPlugValuesString">The values of the input plugs.</param>
         public override void SetInputPlugValues( string inputPlugValuesString )
         {
             string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
@@ -210,8 +217,7 @@ namespace GateNetworkDotNet.Gates
         /// </summary>
         public override void Initialize()
         {
-            // Initialize the nested gates.
-            foreach (KeyValuePair< string, Gate > kvp in nestedGates)
+            foreach (KeyValuePair<string, Gate> kvp in nestedGates)
             {
                 Gate nestedGate = kvp.Value;
                 nestedGate.Initialize();
@@ -219,14 +225,39 @@ namespace GateNetworkDotNet.Gates
         }
 
         /// <summary>
-        /// Evaluates the composite gate.
+        /// Updates the values of the input plugs of the composite gate.
         /// </summary>
-        public override void Evaluate()
+        public override bool UpdateInputPlugValues()
         {
+            foreach (Plug inputPlug in InputPlugs)
+            {
+                inputPlug.UpdatePlugValue();
+            }
+
+            bool updatePerformed = false;
+
             foreach (KeyValuePair< string, Gate > kvp in nestedGates)
             {
                 Gate nestedGate = kvp.Value;
-                nestedGate.Evaluate();
+                updatePerformed = nestedGate.UpdateInputPlugValues() || updatePerformed;
+            }
+
+            return updatePerformed;
+        }
+
+        /// <summary>
+        /// Evaluates the composite gate.
+        /// </summary>
+        public override void UpdateOutputPlugValues()
+        {
+            foreach (KeyValuePair<string, Gate> kvp in nestedGates)
+            {
+                Gate nestedGate = kvp.Value;
+                nestedGate.UpdateOutputPlugValues();
+            }
+            foreach (Plug outputPlug in OutputPlugs)
+            {
+                outputPlug.UpdatePlugValue();
             }
         }
 

@@ -39,9 +39,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Exceptions\IllegalInputsException.cs" />
-    <Compile Include="Exceptions\IllegalOutputsException.cs" />
-    <Compile Include="Exceptions\IllegalTransitionException.cs" />
     <Compile Include="Exceptions\MyException.cs" />
     <Compile Include="Gates\BasicGate.cs" />
     <Compile Include="Gates\CompositeGate.cs" />
