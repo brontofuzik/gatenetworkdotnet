@@ -9,7 +9,7 @@ namespace GateNetworkDotNet.Gates
     /// <summary>
     /// A basic gate.
     /// </summary>
-    class BasicGate
+    public class BasicGate
         : Gate
     {
         #region Private instance fields
@@ -18,34 +18,10 @@ namespace GateNetworkDotNet.Gates
         /// The type of the basic gate.
         /// </summary>
         private BasicGateType type;
-
-        /// <summary>
-        /// Is the basic gate evaluated.
-        /// </summary>
-        private bool isEvaluated;
         
         #endregion // Private instance fields
 
         #region Public instance properties
-
-        /// <summary>
-        /// Determines whether the basic gate is evaluated.
-        /// </summary>
-        /// 
-        /// <value>
-        /// <c>True</c> if the basic gate is evaluated, <c>false</c> otherwise.
-        /// </value>
-        public bool IsEvaluated
-        {
-            get
-            {
-                return isEvaluated;
-            }
-            set
-            {
-                isEvaluated = value;
-            }
-        }
 
         #endregion // Public instance properties
 
@@ -73,9 +49,6 @@ namespace GateNetworkDotNet.Gates
                 throw new ArgumentNullException( "type" );
             }
             this.type = type;
-
-            // The newly constructed basic gate is not yet evaluated.
-            isEvaluated = false;
         }
 
         #endregion // Public instance constructors
@@ -86,8 +59,8 @@ namespace GateNetworkDotNet.Gates
         /// Sets the values of the input plugs.
         /// </summary>
         /// 
-        /// <param name="inputPlugValues">The values of the input plugs.</param>
-        public override void SetInputPlugValues( string inputPlugValuesString )
+        /// <param name="inputPlugValuesString">The values of the input plugs.</param>
+        public override void SetInputPlugValues(string inputPlugValuesString )
         {
             string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
             for (int i = 0; i < InputPlugCount; i++)
@@ -103,10 +76,12 @@ namespace GateNetworkDotNet.Gates
         {
             if (InputPlugCount == 0)
             {
-                Evaluate();
+                // If the gate has no input plugs, it is initialized using the transition function.
+                UpdateOutputPlugValues();
             }
             else
             {
+                // If the basic gate has at least one input plug, it is initialized using the "?" values.
                 StringBuilder outputPlugValuesSB = new StringBuilder();
                 for (int i = 0; i < OutputPlugCount; i++)
                 {
@@ -116,24 +91,34 @@ namespace GateNetworkDotNet.Gates
                 string outputPlugValues = outputPlugValuesSB.ToString();
 
                 SetOutputPlugValues( outputPlugValues );
-
-                isEvaluated = false;
             }
+        }
+
+        /// <summary>
+        /// Updates the values of the input plugs of the basic gate.
+        /// </summary>
+        public override bool UpdateInputPlugValues()
+        {
+            bool updatePerformed = false;
+
+            foreach (Plug inputPlug in InputPlugs)
+            {
+                updatePerformed = inputPlug.UpdatePlugValue() || updatePerformed;
+            }
+
+            return updatePerformed;
         }
 
         /// <summary>
         /// Evaluates the basic gate.
         /// </summary>
-        public override void Evaluate()
+        public override void UpdateOutputPlugValues()
         {
-            if (!isEvaluated)
-            {
-                string inputPlugValues = GetInputPlugValues();
-                string outputPlugValues = type.Evaluate( inputPlugValues );
-                SetOutputPlugValues( outputPlugValues );
-                
-                isEvaluated = true;
-            }
+            string inputPlugValues = GetInputPlugValues();
+
+            string outputPlugValues = type.Evaluate(inputPlugValues);
+
+            SetOutputPlugValues(outputPlugValues);
         }
 
         #endregion // Public instance methods

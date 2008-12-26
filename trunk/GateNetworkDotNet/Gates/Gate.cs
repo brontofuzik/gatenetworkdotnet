@@ -205,14 +205,16 @@ namespace GateNetworkDotNet.Gates
         /// </returns>
         public string GetInputPlugValues()
         {
+            // Build the string representation of the values of the input plugs.
             StringBuilder inputPlugValuesSB = new StringBuilder();
             for (int i = 0; i < InputPlugCount; i++)
             {
-                inputPlugValuesSB.Append( inputPlugs[i].Value + " " );
+                inputPlugValuesSB.Append(InputPlugs[i].Value + " ");
             }
+            // Remove the trailing space character if necessary.
             if (inputPlugValuesSB.Length != 0)
             {
-                inputPlugValuesSB.Remove( inputPlugValuesSB.Length - 1, 1 );
+                inputPlugValuesSB.Remove(inputPlugValuesSB.Length - 1, 1);
             }
             return inputPlugValuesSB.ToString();
         }
@@ -221,8 +223,8 @@ namespace GateNetworkDotNet.Gates
         /// Sets the values of the input plugs.
         /// </summary>
         /// 
-        /// <param name="inputPlugValues">The values of the input plugs.</param>
-        public abstract void SetInputPlugValues( string inputPlugValuesString );
+        /// <param name="inputPlugValuesString">The values of the input plugs.</param>
+        public abstract void SetInputPlugValues(string inputPlugValuesString);
 
         /// <summary>
         /// Gets the values of the output plugs.
@@ -233,11 +235,13 @@ namespace GateNetworkDotNet.Gates
         /// </returns>
         public string GetOutputPlugValues()
         {
+            // Build the string representation of the values of the output plugs.
             StringBuilder outputPlugValuesSB = new StringBuilder();
             for (int i = 0; i < OutputPlugCount; i++)
             {
-                outputPlugValuesSB.Append( outputPlugs[ i ].Value + " " );
+                outputPlugValuesSB.Append( OutputPlugs[ i ].Value + " " );
             }
+            // Remove the trailing space character if necessary.
             if (outputPlugValuesSB.Length != 0)
             {
                 outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
@@ -250,12 +254,12 @@ namespace GateNetworkDotNet.Gates
         /// </summary>
         /// 
         /// <param name="outputPlugValues">The values of the output plugs.</param>
-        public void SetOutputPlugValues( string outputPlugValuesString )
+        public void SetOutputPlugValues(string outputPlugValuesString)
         {
-            string[] outputPlugValues = outputPlugValuesString.Split( ' ' );
+            string[] outputPlugValues = outputPlugValuesString.Split(' ');
             for (int i = 0; i < OutputPlugCount; i++)
             {
-                outputPlugs[ i ].Value = outputPlugValues[ i ];
+                OutputPlugs[i].Value = outputPlugValues[i];
             }
         }
 
@@ -265,9 +269,48 @@ namespace GateNetworkDotNet.Gates
         public abstract void Initialize();
 
         /// <summary>
+        /// Updates the values of the input plugs of the (abstract) gate.
+        /// </summary>
+        public abstract bool UpdateInputPlugValues();
+
+        /// <summary>
         /// Evaluates the (abstract) gate.
         /// </summary>
-        public abstract void Evaluate();
+        public abstract void UpdateOutputPlugValues();
+
+        /// <summary>
+        /// Evaluates the (abstract) gate.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugValues">The values of the input plugs.</param>
+        /// 
+        /// <returns>
+        /// The computation time (in cycles) and the values of the output plugs.
+        /// </returns>
+        public string Evaluate(string inputPlugValues)
+        {
+            SetInputPlugValues(inputPlugValues);
+            bool updatePerformed = true;
+
+            int cycles = 0;
+            while (cycles < 1000000)
+            {
+                // Update the values of the input plugs.
+                updatePerformed = UpdateInputPlugValues();
+
+                if (!updatePerformed)
+                {
+                    break;
+                }
+
+                // Update the values of the output plugs.
+                UpdateOutputPlugValues();
+
+                cycles++;
+            }
+
+            return cycles + " " + GetOutputPlugValues();
+        }
 
         #endregion // Public instance methods
     }

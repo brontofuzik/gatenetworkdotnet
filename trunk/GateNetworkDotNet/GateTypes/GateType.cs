@@ -144,7 +144,7 @@ namespace GateNetworkDotNet.GateTypes
             }
             if (!Program.IsLegalIdentifier( name ))
             {
-                throw new MyException( 0, "Illegal identifier (" + name + ")." );
+                throw new MyException( "Syntax error (" + name + ")." );
             }
             this.name = name;
         }
@@ -179,11 +179,11 @@ namespace GateNetworkDotNet.GateTypes
                 {
                     if (!Program.IsLegalIdentifier( inputPlugName ))
                     {
-                        throw new MyException( 0, "Illegal identifier (" + inputPlugName + ")." );
+                        throw new MyException( "Syntax error (" + inputPlugName + ")." );
                     }
                     if (inputPlugNamesCollection.Contains( inputPlugName ))
                     {
-                        throw new MyException( 0, "Duplicate (" + inputPlugName + ")." );
+                        throw new MyException( "Duplicate (" + inputPlugName + ")." );
                     }
                     inputPlugNamesCollection.Add( inputPlugName );
                 }
@@ -226,11 +226,11 @@ namespace GateNetworkDotNet.GateTypes
                 {
                     if (!Program.IsLegalIdentifier( outputPlugName ))
                     {
-                        throw new MyException( 0, "Illegal identifier (" + outputPlugName + ")." );
+                        throw new MyException( "Syntax error (" + outputPlugName + ")." );
                     }
                     if (outputPlugNamesCollection.Contains( outputPlugName ))
                     {
-                        throw new MyException( 0, "Duplicate (" + outputPlugName + ")." );
+                        throw new MyException( "Duplicate (" + outputPlugName + ")." );
                     }
                     outputPlugNamesCollection.Add( outputPlugName );
                 }
@@ -238,7 +238,7 @@ namespace GateNetworkDotNet.GateTypes
             else
             {
                 // No output plug names.
-                throw new MyException( 0, "Syntax error." );
+                throw new MyException( "Syntax error." );
             }
         }
 

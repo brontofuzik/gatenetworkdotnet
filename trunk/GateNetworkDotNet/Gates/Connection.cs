@@ -62,17 +62,5 @@ namespace GateNetworkDotNet.Gates
         }
 
         #endregion // Public instance properties
-
-        #region Public insatnce methods
-
-        /// <summary>
-        /// Transmits the value from the source plug to the target plug.
-        /// </summary>
-        public void Transmit()
-        {
-            targetPlug.Value = sourcePlug.Value;
-        }
-
-        #endregion // Public instance methods
     }
 }

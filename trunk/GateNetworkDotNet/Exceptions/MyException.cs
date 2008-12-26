@@ -32,7 +32,7 @@ namespace GateNetworkDotNet.Exceptions
         {
             get
             {
-                return "Line " + lineNumber + ": " + message + ".";
+                return ((lineNumber != 0) ? ("Line " + lineNumber + ": ") : "") + message;
             }
         }
 
@@ -50,6 +50,11 @@ namespace GateNetworkDotNet.Exceptions
         {
             this.lineNumber = lineNumber;
             this.message = message;
+        }
+
+        public MyException(string message)
+            : this( 0, message )
+        {
         }
 
         #endregion // Public instance constructors

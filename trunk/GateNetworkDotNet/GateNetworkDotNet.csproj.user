@@ -1,5 +1,8 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <StartArguments>../../SimpleNetworkNAND.txt</StartArguments>
+    <StartArguments>../../SimpleNetwork3NOT.txt</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <StartArguments>../../SimpleNetworkAND.txt</StartArguments>
   </PropertyGroup>
 </Project>
