@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using GateNetworkDotNet.Exceptions;
+
 namespace GateNetworkDotNet.Gates
 {
     /// <summary>
@@ -49,6 +51,10 @@ namespace GateNetworkDotNet.Gates
             }
             set
             {
+                if (!IsLegalPlugValue( value ))
+                {
+                    throw new MyException("Syntax error.");
+                }
                 this.value = value;
             }
         }
@@ -135,5 +141,15 @@ namespace GateNetworkDotNet.Gates
         }
 
         #endregion // Public instance methods
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="plugValue"></param>
+        /// <returns></returns>
+        public static bool IsLegalPlugValue( string plugValue )
+        {
+            return (plugValue.Equals("0") || plugValue.Equals("1") || plugValue.Equals("?"));
+        }
     }
 }

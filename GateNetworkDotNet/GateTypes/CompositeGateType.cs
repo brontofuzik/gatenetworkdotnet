@@ -136,6 +136,74 @@ namespace GateNetworkDotNet.GateTypes
         #region Public instance methods
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="line"></param>
+        /// <param name="gateTypes"></param>
+        public override void Configure(string line, Dictionary<string, GateType> gateTypes)
+        {
+            string keyword = ParseKeyword( line );
+
+            if (keyword.Equals( "inputs" ))
+            {
+                // Set the names of the input plugs.
+                string inputPlugNames = ParsePlugNames( line );
+                SetInputPlugNames( inputPlugNames );
+            }
+            else if (keyword.Equals( "outputs" ))
+            {
+                // Set the names of the output plugs.
+                string outputPlugNames = ParsePlugNames( line );
+                SetOutputPlugNames( outputPlugNames );
+            }
+            else if (keyword.Equals( "gate" ))
+            {
+                // Set the nested gates.
+                string nestedGate = ParseNestedGate( line );
+                AddNestedGate( nestedGate, gateTypes );
+            }
+            else if (keyword.Equals( "end" ))
+            {
+                // End the construction process.
+                EndConstruction();
+            }
+            else
+            {
+                // Set the connections.
+                string connection = ParseConnection(line);
+                AddConnection(connection);
+            }
+        }
+
+        /// <summary>
+        /// Parses a line for a nested gate.
+        /// </summary>
+        /// 
+        /// <param name="line">The line.</param>
+        /// 
+        /// <returns>
+        /// The nested gate.
+        /// </returns>
+        public string ParseNestedGate(string line)
+        {
+            return line.Substring(line.IndexOf(' ') + 1);
+        }
+
+        /// <summary>
+        /// Parses a line for a connection.
+        /// </summary>
+        /// 
+        /// <param name="line">The line.</param>
+        /// 
+        /// <returns>
+        /// The connection.
+        /// </returns>
+        public string ParseConnection(string line)
+        {
+            return line;
+        }
+
+        /// <summary>
         /// Sets the name of the composite gate type.
         /// </summary>
         /// 
@@ -159,7 +227,7 @@ namespace GateNetworkDotNet.GateTypes
             base.SetName( name );
 
             // Advance the phase of construction.
-            constructionPhase = CompositeGateTypeConstructionPhase.INPUTS;
+            constructionPhase = CompositeGateTypeConstructionPhase.INPUT_PLUG_NAMES;
         }
 
         /// <summary>
@@ -179,7 +247,7 @@ namespace GateNetworkDotNet.GateTypes
         public override void SetInputPlugNames( string inputPlugNames )
         {
             // Validate the phase of construction.
-            if (constructionPhase != CompositeGateTypeConstructionPhase.INPUTS)
+            if (constructionPhase != CompositeGateTypeConstructionPhase.INPUT_PLUG_NAMES)
             {
                 throw new MyException( "Missing keyword." );
             }
@@ -187,7 +255,7 @@ namespace GateNetworkDotNet.GateTypes
             base.SetInputPlugNames( inputPlugNames + " " + implicitInputPlugNames );
 
             // Advance the phase of construction.
-            constructionPhase = CompositeGateTypeConstructionPhase.OUTPUTS;
+            constructionPhase = CompositeGateTypeConstructionPhase.OUTPUT_PLUG_NAMES;
         }
 
         /// <summary>
@@ -208,7 +276,7 @@ namespace GateNetworkDotNet.GateTypes
         public override void SetOutputPlugNames( string outputPlugNames )
         {
             // Validate the phase of construction.
-            if (constructionPhase != CompositeGateTypeConstructionPhase.OUTPUTS)
+            if (constructionPhase != CompositeGateTypeConstructionPhase.OUTPUT_PLUG_NAMES)
             {
                 throw new MyException( "Missing keyword." );
             }
@@ -216,7 +284,7 @@ namespace GateNetworkDotNet.GateTypes
             base.SetOutputPlugNames( outputPlugNames );
 
             // Advance the phase of construction.
-            constructionPhase = CompositeGateTypeConstructionPhase.GATES;
+            constructionPhase = CompositeGateTypeConstructionPhase.NESTED_GATES;
         }
 
         /// <summary>
@@ -238,7 +306,7 @@ namespace GateNetworkDotNet.GateTypes
         public void AddNestedGate( string nestedGate, Dictionary< string, GateType > gateTypes )
         {
             // Validate the phase of construction.
-            if (constructionPhase != CompositeGateTypeConstructionPhase.GATES)
+            if (constructionPhase != CompositeGateTypeConstructionPhase.NESTED_GATES && constructionPhase != CompositeGateTypeConstructionPhase.CONNECTIONS)
             {
                 throw new MyException( "Missing keyword." );
             }
@@ -266,7 +334,7 @@ namespace GateNetworkDotNet.GateTypes
             string nestedGateName = nestedGateNameAndType[ 0 ];
             
             // Validate the legality of the name of the nested gate.
-            if (!Program.IsLegalIdentifier( nestedGateName ))
+            if (!Program.IsLegalName( nestedGateName ))
             {
                 throw new MyException( "Syntax error (" + nestedGateName + ")." );
             }
@@ -294,6 +362,9 @@ namespace GateNetworkDotNet.GateTypes
 
             // Store the nested gate.
             nestedGateTypes.Add( nestedGateName, nestedGateType );
+
+            // Advance the phase of construction.
+            constructionPhase = CompositeGateTypeConstructionPhase.CONNECTIONS;
         }
 
         /// <summary>
@@ -311,12 +382,6 @@ namespace GateNetworkDotNet.GateTypes
         /// </exception>
         public void AddConnection( string connection )
         {
-            // Advance the phase of construction if necessary.
-            if (constructionPhase == CompositeGateTypeConstructionPhase.GATES)
-            {
-                constructionPhase = CompositeGateTypeConstructionPhase.CONNECTIONS;
-            }
-
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.CONNECTIONS)
             {
@@ -353,6 +418,10 @@ namespace GateNetworkDotNet.GateTypes
         /// </summary>
         public override void EndConstruction()
         {
+            if (constructionPhase != CompositeGateTypeConstructionPhase.CONNECTIONS)
+            {
+                throw new MyException( "Missing keyword." );
+            }
             constructionPhase = CompositeGateTypeConstructionPhase.END;
         }
 
@@ -377,9 +446,9 @@ namespace GateNetworkDotNet.GateTypes
     {
         BEGINNING,
         NAME,
-        INPUTS,
-        OUTPUTS,
-        GATES,
+        INPUT_PLUG_NAMES,
+        OUTPUT_PLUG_NAMES,
+        NESTED_GATES,
         CONNECTIONS,
         END
     }

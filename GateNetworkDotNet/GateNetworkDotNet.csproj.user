@@ -1,8 +1,8 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <StartArguments>../../SimpleNetwork3NOT.txt</StartArguments>
+    <StartArguments>../../DU1-Priklady/4bitAdder/4bitAdder-3.txt</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <StartArguments>../../SimpleNetworkAND.txt</StartArguments>
+    <StartArguments>../../DU1-Priklady\4bitAdder\4bitAdder-3.txt</StartArguments>
   </PropertyGroup>
 </Project>
