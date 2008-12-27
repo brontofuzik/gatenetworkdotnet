@@ -8,19 +8,19 @@ using GateNetworkDotNet.GateTypes;
 namespace GateNetworkDotNet.Gates
 {
     public class CompositeGate
-        : AbstractGate
+        : Gate
     {
         #region Private instance fields
 
         /// <summary>
         /// The type of the composite gate.
         /// </summary>
-        private AbstractCompositeGateType type;
+        private CompositeGateType type;
 
         /// <summary>
         /// The nested gates.
         /// </summary>
-        private Dictionary< string, AbstractGate > nestedGates;
+        private Dictionary< string, Gate > nestedGates;
 
         /// <summary>
         /// The connections;
@@ -38,7 +38,7 @@ namespace GateNetworkDotNet.Gates
         /// <value>
         /// The nested gates.
         /// </value>
-        public Dictionary< string, AbstractGate > NestedGates
+        public Dictionary< string, Gate > NestedGates
         {
             get
             {
@@ -108,7 +108,7 @@ namespace GateNetworkDotNet.Gates
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>type</c> is <c>null</c>.
         /// </exception>
-        public CompositeGate( string name, AbstractCompositeGateType type )
+        public CompositeGate( string name, CompositeGateType type )
             : base( name, type )
         {
             // Validate the composite gate type.
@@ -121,12 +121,12 @@ namespace GateNetworkDotNet.Gates
             //
             // Construct the nested gates.
             //
-            nestedGates = new Dictionary< string, AbstractGate >();
-            foreach (KeyValuePair< string, AbstractGateType > kvp in type.NestedGateTypes)
+            nestedGates = new Dictionary< string, Gate >();
+            foreach (KeyValuePair< string, GateType > kvp in type.NestedGateTypes)
             {
                 string nestedGateName = kvp.Key;
-                AbstractGateType nestedGateType = kvp.Value;
-                AbstractGate nestedGate = nestedGateType.Instantiate( nestedGateName );
+                GateType nestedGateType = kvp.Value;
+                Gate nestedGate = nestedGateType.Instantiate( nestedGateName );
 
                 nestedGates.Add( nestedGateName, nestedGate ); 
             }
@@ -146,7 +146,7 @@ namespace GateNetworkDotNet.Gates
                 bool nestedTargetPlug = (targetPlugName.Length != 1);
                 
                 // Depending on whether the target plug is a nested plug, the target gate is ...
-                AbstractGate targetGate = nestedTargetPlug ?
+                Gate targetGate = nestedTargetPlug ?
                     // ... a nested gate.
                     nestedGates[ targetPlugName[ 0 ] ] :
                     // ... this composite gate.
@@ -167,7 +167,7 @@ namespace GateNetworkDotNet.Gates
                 bool nestedSourcePlug = (sourcePlugName.Length != 1);
 
                 // Depending on whether the source plug is a nested plug, the source gate is ...
-                AbstractGate sourceGate = nestedSourcePlug ?
+                Gate sourceGate = nestedSourcePlug ?
                     // ... a nested gate.
                     nestedGates[ sourcePlugName[ 0 ] ] :
                     // ... this composite gate.
@@ -223,9 +223,9 @@ namespace GateNetworkDotNet.Gates
         /// </summary>
         public override void Initialize()
         {
-            foreach (KeyValuePair<string, AbstractGate> kvp in nestedGates)
+            foreach (KeyValuePair<string, Gate> kvp in nestedGates)
             {
-                AbstractGate nestedGate = kvp.Value;
+                Gate nestedGate = kvp.Value;
                 nestedGate.Initialize();
             }
         }
@@ -242,9 +242,9 @@ namespace GateNetworkDotNet.Gates
 
             bool updatePerformed = false;
 
-            foreach (KeyValuePair< string, AbstractGate > kvp in nestedGates)
+            foreach (KeyValuePair< string, Gate > kvp in nestedGates)
             {
-                AbstractGate nestedGate = kvp.Value;
+                Gate nestedGate = kvp.Value;
                 updatePerformed = nestedGate.UpdateInputPlugValues() || updatePerformed;
             }
 
@@ -256,9 +256,9 @@ namespace GateNetworkDotNet.Gates
         /// </summary>
         public override void UpdateOutputPlugValues()
         {
-            foreach (KeyValuePair<string, AbstractGate> kvp in nestedGates)
+            foreach (KeyValuePair<string, Gate> kvp in nestedGates)
             {
-                AbstractGate nestedGate = kvp.Value;
+                Gate nestedGate = kvp.Value;
                 nestedGate.UpdateOutputPlugValues();
             }
             foreach (Plug outputPlug in OutputPlugs)

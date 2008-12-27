@@ -30,7 +30,7 @@ namespace GateNetworkDotNet.Gates
         /// <summary>
         /// The parent gate of the plug.
         /// </summary>
-        private AbstractGate parentGate;
+        private Gate parentGate;
 
         #endregion // Private instance fields
 
@@ -70,7 +70,7 @@ namespace GateNetworkDotNet.Gates
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>parentGate</c> is <c>null</c>.
         /// </exception>
-        public Plug( AbstractGate parentGate )
+        public Plug( Gate parentGate )
         {
             value = "?";
 

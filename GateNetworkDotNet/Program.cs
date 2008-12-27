@@ -9,8 +9,16 @@ using GateNetworkDotNet.GateTypes;
 
 namespace GateNetworkDotNet
 {
+    /// <summary>
+    /// An entry point of the application.
+    /// </summary>
     class Program
     {
+        /// <summary>
+        /// An entry point of the application.
+        /// </summary>
+        /// 
+        /// <param name="args">The command line arguments.</param>
         static void Main( string[] args )
         {
             StreamReader streamReader = null;
@@ -24,12 +32,12 @@ namespace GateNetworkDotNet
                 // Open the network configuration file.
                 if (args.Length != 1)
                 {
-                    throw new Exception("Usage: GateNetworkDotNet.exe NetworkConfigurationFile");
+                    throw new Exception( "Usage: GateNetworkDotNet.exe NetworkConfigurationFile" );
                 }
-                streamReader = new StreamReader(args[0]);
+                streamReader = new StreamReader( args[ 0 ] );
 
                 // The dictionary of (known) gate types.
-                Dictionary<string, AbstractGateType> gateTypes = new Dictionary<string, AbstractGateType>();
+                Dictionary< string, GateType > gateTypes = new Dictionary< string, GateType >();
 
                 // Loop invariant:
                 // "line" contains the most recently read line.
@@ -43,15 +51,15 @@ namespace GateNetworkDotNet
                         lineNumber++;
 
                         // If the line can be ignored, skip it.
-                        if (IsIgnorableLine(line))
+                        if (IsIgnorableLine( line ))
                         {
                             continue;
                         }
 
-                        AbstractGateType gateType = AbstractGateType.ParseGateType(line);
-                        if (gateTypes.ContainsKey(gateType.Name))
+                        GateType gateType = GateType.ParseGateType( line );
+                        if (gateTypes.ContainsKey( gateType.Name ))
                         {
-                            throw new Exception("Duplicate (" + gateType.Name + ").");
+                            throw new Exception( "Duplicate (" + gateType.Name + ")." );
                         }
 
                         // TODO: Handle EOF eventuality.
@@ -60,23 +68,23 @@ namespace GateNetworkDotNet
                             lineNumber++;
 
                             // If the line can be ignored, skip it.
-                            if (IsIgnorableLine(line))
+                            if (IsIgnorableLine( line ))
                             {
                                 continue;
                             }
 
-                            gateType.Configure(line, gateTypes);
+                            gateType.Configure( line, gateTypes );
                         }
 
                         if (gateType.IsConstructed)
                         {
-                            gateTypes.Add(gateType.Name, gateType);
+                            gateTypes.Add( gateType.Name, gateType );
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    throw new MyException(lineNumber, e.Message);
+                    throw new MyException( lineNumber, e.Message );
                 }
 
                 //
@@ -87,14 +95,14 @@ namespace GateNetworkDotNet
                 NetworkGateType networkGateType;
                 try
                 {
-                    networkGateType = (NetworkGateType)gateTypes["network"];
+                    networkGateType = (NetworkGateType)gateTypes[ "networkGateType" ];
                 }
                 catch (KeyNotFoundException)
                 {
-                    throw new Exception("Missing keyword (network)");
+                    throw new Exception( "Missing keyword (network)" );
                 }
-                CompositeGate network = (CompositeGate)networkGateType.Instantiate("network");
-                network.Initialize();
+                CompositeGate networkGate = (CompositeGate)networkGateType.Instantiate( "networkGate" );
+                networkGate.Initialize();
 
                 //
                 // 3. Use the network.
@@ -109,24 +117,24 @@ namespace GateNetworkDotNet
                         break;
                     }
 
-                    if (line.Equals("end"))
+                    if (line.Equals( "end" ))
                     {
                         break;
                     }
 
                     try
                     {
-                        Console.WriteLine(network.Evaluate(line));
+                        Console.WriteLine( networkGate.Evaluate( line ) );
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e.Message);
+                        Console.WriteLine( e.Message );
                     }
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine( e.Message );
             }
             finally
             {
@@ -156,7 +164,7 @@ namespace GateNetworkDotNet
             string ignorableLinePattern = @"^(|\s*|;.*)$";
             Regex ignorableLineRegex = new Regex( ignorableLinePattern );
 
-            return ignorableLineRegex.IsMatch(line);
+            return ignorableLineRegex.IsMatch( line );
         }
 
         /// <summary>
@@ -177,26 +185,26 @@ namespace GateNetworkDotNet
             }
 
             // If the name contains a whitespace character, it is not legal.
-            if ((name.IndexOf( ' ') != -1) || (name.IndexOf('\t') != -1) || (name.IndexOf('\v') != -1) ||
-                (name.IndexOf('\n') != -1) || (name.IndexOf('\r') != -1) || (name.IndexOf('\f') != -1))
+            if ((name.IndexOf( ' ' ) != -1) || (name.IndexOf( '\t' ) != -1) || (name.IndexOf( '\v' ) != -1) ||
+                (name.IndexOf( '\n' ) != -1) || (name.IndexOf( '\r' ) != -1) || (name.IndexOf( '\f' ) != -1))
             {
                 return false;
             }
 
             // If the name contains any of the following characters, it is not legal.
-            if ((name.IndexOf( '.') != -1) || (name.IndexOf(';') != -1))
+            if ((name.IndexOf( '.' ) != -1) || (name.IndexOf( ';' ) != -1))
             {
                 return false;
             }
 
             // If the name contains any of the following words, it is not legal.
-            if (name.Contains("->"))
+            if (name.Contains( "->" ))
             {
                 return false;
             }
 
             // If the name starts with the word "end", it is not legal.
-            if (name.StartsWith("end"))
+            if (name.StartsWith( "end" ))
             {
                 return false;
             }
