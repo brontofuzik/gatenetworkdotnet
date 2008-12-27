@@ -10,7 +10,7 @@ namespace GateNetworkDotNet.GateTypes
     /// <summary>
     /// An abstract gate type.
     /// </summary>
-    public abstract class GateType
+    public abstract class AbstractGateType
     {
         #region Private instance fields
 
@@ -137,10 +137,7 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>line</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
-        /// Condition 1: <c>line</c> 
-        /// </exception>
-        public static GateType ParseGateType(string line)
+        public static AbstractGateType ParseGateType(string line)
         {
             // Validate the line.
             if (line == null)
@@ -148,7 +145,8 @@ namespace GateNetworkDotNet.GateTypes
                 throw new ArgumentNullException(line);
             }
 
-            GateType gateType;
+            AbstractGateType gateType;
+
             string[] gateTypeClassAndName = line.Split(' ');
             switch (gateTypeClassAndName.Length)
             {
@@ -157,11 +155,11 @@ namespace GateNetworkDotNet.GateTypes
                     // Network construction.
                     if (gateTypeClassAndName[0].Equals("network"))
                     {
-                        gateType = new CompositeGateType();
+                        gateType = new NetworkGateType();
                     }
                     else
                     {
-                        throw new MyException("Syntax error.");
+                        throw new Exception("Syntax error.");
                     }
                     gateType.SetName("network");
                     break;
@@ -182,7 +180,7 @@ namespace GateNetworkDotNet.GateTypes
                     else
                     {
                         // Syntax error.
-                        throw new MyException("Syntax error.");
+                        throw new Exception("Syntax error.");
                     }
                     gateType.SetName(gateTypeClassAndName[1]);
                     break;
@@ -190,7 +188,7 @@ namespace GateNetworkDotNet.GateTypes
                 default:
 
                     // Syntax error.
-                    throw new MyException("Syntax error.");
+                    throw new Exception("Syntax error.");
                     break;
             }
             return gateType;
@@ -205,7 +203,32 @@ namespace GateNetworkDotNet.GateTypes
         /// </summary>
         /// <param name="line"></param>
         /// <param name="gateTypes"></param>
-        public abstract void Configure( string line, Dictionary< string, GateType > gateTypes );
+        public virtual void Configure( string line, Dictionary< string, AbstractGateType > gateTypes )
+        {
+            string keyword = ParseKeyword( line );
+
+            if (keyword.Equals("inputs"))
+            {
+                // Set the names of the input plugs.
+                string[] inputPlugNames = ParsePlugNames(line);
+                SetInputPlugNames(inputPlugNames);
+            }
+            else if (keyword.Equals("outputs"))
+            {
+                // Set the names of the output plugs.
+                string[] outputPlugNames = ParsePlugNames(line);
+                SetOutputPlugNames(outputPlugNames);
+            }
+            else if (keyword.Equals("end"))
+            {
+                // End the construction process.
+                EndConstruction();
+            }
+            else
+            {
+                throw new Exception("Syntax error.");
+            }
+        }
 
         /// <summary>
         /// Parses a line for a keyword.
@@ -220,7 +243,11 @@ namespace GateNetworkDotNet.GateTypes
         /// </returns>
         public string ParseKeyword(string line)
         {
-            return (line.IndexOf(' ') != -1) ? line.Substring(0, line.IndexOf(' ')) : line;
+            // Split the line into words.
+            string[] words = line.Split(' ');
+
+            // Return only the first word.
+            return words[0];
         }
 
 
@@ -233,9 +260,18 @@ namespace GateNetworkDotNet.GateTypes
         /// <returns>
         /// The names of the (input or output) plugs.
         /// </returns>
-        public string ParsePlugNames(string line)
+        public string[] ParsePlugNames(string line)
         {
-            return (line.IndexOf(' ') != -1) ? line.Substring(line.IndexOf(' ') + 1) : "";
+            // Split the line into words.
+            string[] words = line.Split(' ');
+
+            // Return all the words except for the first one.
+            string[] plugNames = new string[words.Length - 1];
+            for (int i = 0; i < plugNames.Length; i++)
+            {
+                plugNames[i] = words[i + 1];
+            }
+            return plugNames;
         }
 
         /// <summary>
@@ -247,9 +283,6 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>name</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
-        /// Condition: <c>name</c> is not a legal identifier.
-        /// </exception>
         public virtual void SetName( string name )
         {
             // Validate the name.
@@ -259,7 +292,7 @@ namespace GateNetworkDotNet.GateTypes
             }
             if (!Program.IsLegalName( name ))
             {
-                throw new MyException( "Syntax error (" + name + ")." );
+                throw new Exception( "Syntax error (" + name + ")." );
             }
             this.name = name;
         }
@@ -273,41 +306,29 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>inputPlugNames</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
-        /// Condition 1: <c>inputPlugNames</c> contains an illegal input plug name.
-        /// Condition 2: <c>inputPlugNames</c> contains duplicit input plug names.
-        /// </exception>
-        public virtual void SetInputPlugNames( string inputPlugNamesString )
+        public virtual void SetInputPlugNames( string[] inputPlugNames )
         {
             // Validate the names of the input plugs.
-            if (inputPlugNamesString == null)
+            if (inputPlugNames == null)
             {
                 throw new ArgumentNullException( "inputPlugNames" );
             }
 
-            if (inputPlugNamesString.Length != 0)
+            StringCollection inputPlugNamesCollection = new StringCollection();
+            foreach (string inputPlugName in inputPlugNames)
             {
-                // One or more input plug names.
-                StringCollection inputPlugNamesCollection = new StringCollection();
-                inputPlugNames = inputPlugNamesString.Split( ' ' );
-                foreach (string inputPlugName in inputPlugNames)
+                if (!Program.IsLegalName( inputPlugName ))
                 {
-                    if (!Program.IsLegalName( inputPlugName ))
-                    {
-                        throw new MyException( "Syntax error (" + inputPlugName + ")." );
-                    }
-                    if (inputPlugNamesCollection.Contains( inputPlugName ))
-                    {
-                        throw new MyException( "Duplicate (" + inputPlugName + ")." );
-                    }
-                    inputPlugNamesCollection.Add( inputPlugName );
+                    throw new Exception( "Syntax error (" + inputPlugName + ")." );
                 }
+                if (inputPlugNamesCollection.Contains( inputPlugName ))
+                {
+                    throw new Exception( "Duplicate (" + inputPlugName + ")." );
+                }
+                inputPlugNamesCollection.Add( inputPlugName );
             }
-            else
-            {
-                // No input plug names.
-                inputPlugNames = new string[ 0 ];
-            }
+
+            this.inputPlugNames = inputPlugNames;
         }
 
         /// <summary>
@@ -319,42 +340,34 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>outputPlugNames</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
-        /// Condition 1: <c>outputPlugNames</c> contains an illegal output plug name.
-        /// Condition 2: <c>outputPlugNames</c> contains duplicit output plug names.
-        /// Condition 3: <c>outputPlugNames</c> contains less than one output plug name.
-        /// </exception>
-        public virtual void SetOutputPlugNames( string outputPlugNamesString )
+        public virtual void SetOutputPlugNames( string[] outputPlugNames )
         {
             // Validate the names of the output plugs.
-            if (outputPlugNamesString == null)
+            if (outputPlugNames == null)
             {
                 throw new ArgumentNullException( "outputPlugNames" );
             }
 
-            if (outputPlugNamesString.Length != 0)
+            if (outputPlugNames.Length == 0)
             {
-                // One or more output plug names.
-                StringCollection outputPlugNamesCollection = new StringCollection();
-                outputPlugNames = outputPlugNamesString.Split( ' ' );
-                foreach (string outputPlugName in outputPlugNames)
+                throw new Exception("Syntax error.");
+            }
+
+            StringCollection outputPlugNamesCollection = new StringCollection();
+            foreach (string outputPlugName in outputPlugNames)
+            {
+                if (!Program.IsLegalName( outputPlugName ))
                 {
-                    if (!Program.IsLegalName( outputPlugName ))
-                    {
-                        throw new MyException( "Syntax error (" + outputPlugName + ")." );
-                    }
-                    if (outputPlugNamesCollection.Contains( outputPlugName ))
-                    {
-                        throw new MyException( "Duplicate (" + outputPlugName + ")." );
-                    }
-                    outputPlugNamesCollection.Add( outputPlugName );
+                    throw new Exception( "Syntax error (" + outputPlugName + ")." );
                 }
+                if (outputPlugNamesCollection.Contains( outputPlugName ))
+                {
+                    throw new Exception( "Duplicate (" + outputPlugName + ")." );
+                }
+                outputPlugNamesCollection.Add( outputPlugName );
             }
-            else
-            {
-                // No output plug names.
-                throw new MyException( "Syntax error." );
-            }
+
+            this.outputPlugNames = outputPlugNames;
         }
 
         public abstract void EndConstruction();
@@ -368,7 +381,7 @@ namespace GateNetworkDotNet.GateTypes
         /// <returns>
         /// The (abstract) gate object.
         /// </returns>
-        public abstract Gate Instantiate( string name );
+        public abstract AbstractGate Instantiate( string name );
 
         /// <summary>
         /// Gets the index of an input plug specified by its name.

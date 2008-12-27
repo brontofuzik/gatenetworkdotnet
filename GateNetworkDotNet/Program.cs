@@ -24,12 +24,12 @@ namespace GateNetworkDotNet
                 // Open the network configuration file.
                 if (args.Length != 1)
                 {
-                    throw new MyException("Usage: GateNetworkDotNet.exe NetworkConfigurationFile");
+                    throw new Exception("Usage: GateNetworkDotNet.exe NetworkConfigurationFile");
                 }
                 streamReader = new StreamReader(args[0]);
 
                 // The dictionary of (known) gate types.
-                Dictionary<string, GateType> gateTypes = new Dictionary<string, GateType>();
+                Dictionary<string, AbstractGateType> gateTypes = new Dictionary<string, AbstractGateType>();
 
                 // Loop invariant:
                 // "line" contains the most recently read line.
@@ -48,10 +48,10 @@ namespace GateNetworkDotNet
                             continue;
                         }
 
-                        GateType gateType = GateType.ParseGateType(line);
+                        AbstractGateType gateType = AbstractGateType.ParseGateType(line);
                         if (gateTypes.ContainsKey(gateType.Name))
                         {
-                            throw new MyException("Duplicate (" + gateType.Name + ").");
+                            throw new Exception("Duplicate (" + gateType.Name + ").");
                         }
 
                         // TODO: Handle EOF eventuality.
@@ -68,10 +68,13 @@ namespace GateNetworkDotNet
                             gateType.Configure(line, gateTypes);
                         }
 
-                        gateTypes.Add(gateType.Name, gateType);
+                        if (gateType.IsConstructed)
+                        {
+                            gateTypes.Add(gateType.Name, gateType);
+                        }
                     }
                 }
-                catch (MyException e)
+                catch (Exception e)
                 {
                     throw new MyException(lineNumber, e.Message);
                 }
@@ -81,16 +84,16 @@ namespace GateNetworkDotNet
                 //
 
 
-                GateType networkType;
+                NetworkGateType networkGateType;
                 try
                 {
-                    networkType = gateTypes[ "network" ];
+                    networkGateType = (NetworkGateType)gateTypes["network"];
                 }
                 catch (KeyNotFoundException)
                 {
-                    throw new MyException("Missing keyword (network).");
+                    throw new Exception("Missing keyword (network)");
                 }
-                CompositeGate network = (CompositeGate)networkType.Instantiate("network");
+                CompositeGate network = (CompositeGate)networkGateType.Instantiate("network");
                 network.Initialize();
 
                 //
@@ -115,25 +118,13 @@ namespace GateNetworkDotNet
                     {
                         Console.WriteLine(network.Evaluate(line));
                     }
-                    catch (MyException e)
+                    catch (Exception e)
                     {
                         Console.WriteLine(e.Message);
                     }
                 }
             }
-            catch (MyException e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            catch (FileNotFoundException e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            catch (DirectoryNotFoundException e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            catch (IOException e)
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
@@ -179,6 +170,12 @@ namespace GateNetworkDotNet
         /// </returns>
         public static bool IsLegalName( string name )
         {
+            // If the name is of zero length, it is not legal.
+            if (name.Length == 0)
+            {
+                return false;
+            }
+
             // If the name contains a whitespace character, it is not legal.
             if ((name.IndexOf( ' ') != -1) || (name.IndexOf('\t') != -1) || (name.IndexOf('\v') != -1) ||
                 (name.IndexOf('\n') != -1) || (name.IndexOf('\r') != -1) || (name.IndexOf('\f') != -1))

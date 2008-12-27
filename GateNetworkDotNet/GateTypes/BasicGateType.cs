@@ -11,7 +11,7 @@ namespace GateNetworkDotNet.GateTypes
     /// A basic gate type.
     /// </summary>
     public class BasicGateType
-        : GateType
+        : AbstractGateType
     {
         #region Private instance fields
 
@@ -28,6 +28,28 @@ namespace GateNetworkDotNet.GateTypes
         #endregion // Private instance fields
 
         #region Public instance properties
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Dictionary<string, string> Transitions
+        {
+            get
+            {
+                return transitions;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public int TransitionCount
+        {
+            get
+            {
+                return transitions.Count;
+            }
+        }
 
         /// <summary>
         /// Gets the length of a transition.
@@ -66,12 +88,6 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// Creates a new basic gate type.
         /// </summary>
-        /// 
-        /// <param name="name">The name of the basic gate type.</param>
-        ///
-        /// <exception cref="System.ArgumentException">
-        /// Condition: <c>name</c> is not a legal identifier.
-        /// </exception>
         public BasicGateType()
         {
             transitions = new Dictionary< string, string >();
@@ -88,31 +104,18 @@ namespace GateNetworkDotNet.GateTypes
         /// </summary>
         /// <param name="line"></param>
         /// <param name="gateTypes"></param>
-        public override void Configure( string line, Dictionary<string, GateType> gateTypes )
+        public override void Configure( string line, Dictionary<string, AbstractGateType> gateTypes )
         {
             string keyword = ParseKeyword( line );
 
-            if (keyword.Equals("inputs"))
+            if (keyword.Equals("inputs") || keyword.Equals("outputs") || keyword.Equals("end"))
             {
-                // Set the names of the input plugs.
-                string inputPlugNames = ParsePlugNames(line);
-                SetInputPlugNames(inputPlugNames);
-            }
-            else if (keyword.Equals("outputs"))
-            {
-                // Set the names of the output plugs.
-                string outputPlugNames = ParsePlugNames(line);
-                SetOutputPlugNames(outputPlugNames);
-            }
-            else if (keyword.Equals("end"))
-            {
-                // End the construction process.
-                EndConstruction();
+                base.Configure(line, gateTypes);
             }
             else
             {
-                // Set the transition.
-                string transition = ParseTransition(line);
+                // Set the transitions.
+                string[] transition = ParseTransition(line);
                 AddTransition(transition);
             }
         }
@@ -126,9 +129,13 @@ namespace GateNetworkDotNet.GateTypes
         /// <returns>
         /// The transition.
         /// </returns>
-        public string ParseTransition(string line)
+        public string[] ParseTransition(string line)
         {
-            return line;
+            // Split the line into words.
+            string[] words = line.Split(' ');
+            
+            // Return all the words.
+            return words;
         }
 
         /// <summary>
@@ -140,16 +147,12 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>name</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
-        /// Condition 1: TODO
-        /// Condition 2: <c>name</c> is not a legal identifier.
-        /// </exception>
         public override void SetName( string name )
         {
             // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.NAME)
             {
-                throw new MyException( "Missing keyword." );
+                throw new Exception( "Missing keyword." );
             }
 
             base.SetName( name );
@@ -167,17 +170,12 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>inputPlugNames</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
-        /// Condition 1: TODO
-        /// Condition 2: <c>inputPlugNames</c> contains an illegal input plug name.
-        /// Condition 3: <c>inputPlugNames</c> contains duplicit input plug names.
-        /// </exception>
-        public override void SetInputPlugNames( string inputPlugNames )
+        public override void SetInputPlugNames( string[] inputPlugNames )
         {
             // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.INPUT_PLUG_NAMES)
             {
-                throw new MyException( "Missing keyword." );
+                throw new Exception( "Missing keyword." );
             }
 
             base.SetInputPlugNames( inputPlugNames );
@@ -195,18 +193,12 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>outputPlugNames</c> is <c>null</c>.
         /// </exception>
-        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
-        /// Condition 1: TODO
-        /// Condition 2: <c>outputPlugNames</c> contains an illegal output plug name.
-        /// Condition 3: <c>outputPlugNames</c> contains duplicit output plug names.
-        /// Condition 4: <c>outputPlugNames</c> contains less than one output plug name.
-        /// </exception>
-        public override void SetOutputPlugNames( string outputPlugNames )
+        public override void SetOutputPlugNames( string[] outputPlugNames )
         {
             // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.OUTPUT_PLUG_NAMES)
             {
-                throw new MyException( "Missing keyword." );
+                throw new Exception( "Missing keyword." );
             }
 
             base.SetOutputPlugNames( outputPlugNames );
@@ -220,32 +212,29 @@ namespace GateNetworkDotNet.GateTypes
         /// </summary>
         /// 
         /// <param name="transition">The transition.</param>
-        ///
-        /// <exception cref="GateNetworkDotNet.Exceptions.MyException">
-        /// Condition 1: TODO
-        /// Condition 2: <c>transition</c> is not a legal transition.
-        /// </exception>
-        public void AddTransition( string transition )
+        public void AddTransition( string[] transition )
         {
             // Validate the phase of construciton.
             if (constructionPhase != BasicGateTypeConstructionPhase.TRANSITIONS)
             {
-                throw new MyException( "Missing keyword." );
+                throw new Exception( "Missing keyword." );
             }
-
-            // Split the transition.
-            string[] transitionValues = transition.Split( ' ' );
 
             // Validate the transition.
-            if (transitionValues.Length != TransitionLength)
+            if (transition == null)
             {
-                throw new MyException( "Syntax error (" + transition + ")." );
+                throw new ArgumentNullException("transition");
             }
-            foreach (string transitionValue in transitionValues)
+
+            if (transition.Length != TransitionLength)
+            {
+                throw new Exception( "Syntax error (" + transition + ")." );
+            }
+            foreach (string transitionValue in transition)
             {
                 if (!Plug.IsLegalPlugValue( transitionValue ))
                 {
-                    throw new MyException("Syntax error (" + transition + ").");
+                    throw new Exception("Syntax error (" + transition + ").");
                 }
             }
 
@@ -255,7 +244,7 @@ namespace GateNetworkDotNet.GateTypes
             StringBuilder inputPlugValuesSB = new StringBuilder();
             for (int i = 0; i < InputPlugCount; i++)
             {
-                inputPlugValuesSB.Append( transitionValues[ i ] + " " );
+                inputPlugValuesSB.Append( transition[ i ] + " " );
             }
             if (inputPlugValuesSB.Length != 0)
             {
@@ -265,7 +254,7 @@ namespace GateNetworkDotNet.GateTypes
 
             if (transitions.ContainsKey( inputPlugValues ))
             {
-                throw new MyException( "Duplicate (" + transition + ")." );
+                throw new Exception( "Duplicate (" + transition + ")." );
             }
 
             //
@@ -274,7 +263,7 @@ namespace GateNetworkDotNet.GateTypes
             StringBuilder outputPlugValuesSB = new StringBuilder();
             for (int i = InputPlugCount; i < TransitionLength; i++)
             {
-                outputPlugValuesSB.Append( transitionValues[ i ] + " " );
+                outputPlugValuesSB.Append( transition[ i ] + " " );
             }
             if (outputPlugValuesSB.Length != 0)
             {
@@ -293,7 +282,7 @@ namespace GateNetworkDotNet.GateTypes
         {
             if (constructionPhase != BasicGateTypeConstructionPhase.TRANSITIONS)
             {
-                throw new MyException( "Missing keyword." );
+                throw new Exception( "Missing keyword." );
             }
             constructionPhase = BasicGateTypeConstructionPhase.END;
         }
@@ -307,7 +296,7 @@ namespace GateNetworkDotNet.GateTypes
         /// <returns>
         /// The basic gate object.
         /// </returns>
-        public override Gate Instantiate( string name )
+        public override AbstractGate Instantiate( string name )
         {
             return new BasicGate( name, this );
         }

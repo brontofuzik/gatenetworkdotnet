@@ -35,15 +35,7 @@ namespace GateNetworkDotNet.Exceptions
         {
             get
             {
-                // If the number of the line has been specified, include it in the exception message.
-                if (lineNumber != 0)
-                {
-                    return "Line " + lineNumber + ": " + message;
-                }
-                else
-                {
-                    return message;
-                }
+                return "Line " + lineNumber + ": " + message;
             }
         }
 
@@ -61,16 +53,6 @@ namespace GateNetworkDotNet.Exceptions
         {
             this.lineNumber = lineNumber;
             this.message = message;
-        }
-
-        /// <summary>
-        /// Creates a new exception.
-        /// </summary>
-        /// 
-        /// <param name="message">The message of the exception.</param>
-        public MyException( string message )
-            : this( 0, message )
-        {
         }
 
         #endregion // Public instance constructors
