@@ -193,7 +193,6 @@ namespace GateNetworkDotNet.GateTypes
 
                     // Syntax error.
                     throw new Exception( "Syntax error." );
-                    break;
             }
             return gateType;
         }

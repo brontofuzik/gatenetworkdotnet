@@ -7,6 +7,9 @@ using GateNetworkDotNet.GateTypes;
 
 namespace GateNetworkDotNet.Gates
 {
+    /// <summary>
+    /// A composite gate.
+    /// </summary>
     public class CompositeGate
         : Gate
     {
