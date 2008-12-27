@@ -10,7 +10,7 @@ namespace GateNetworkDotNet.Gates
     /// <summary>
     /// An abstract gate.
     /// </summary>
-    public abstract class AbstractGate
+    public abstract class Gate
     {
         #region Private instance fields
 
@@ -22,7 +22,7 @@ namespace GateNetworkDotNet.Gates
         /// <summary>
         /// The type of the (abstract) gate.
         /// </summary>
-        private AbstractGateType type;
+        private GateType type;
 
         /// <summary>
         /// The input plugs.
@@ -128,7 +128,7 @@ namespace GateNetworkDotNet.Gates
         /// Condition 1: <c>name</c> is <c>null</c>.
         /// Condition 2: <c>type</c> is <c>null</c>.
         /// </exception>
-        protected AbstractGate( string name, AbstractGateType type )
+        protected Gate( string name, GateType type )
         {
             // Validate the name.
             if (!Program.IsLegalName( name ))

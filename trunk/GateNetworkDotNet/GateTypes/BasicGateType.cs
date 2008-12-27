@@ -8,10 +8,10 @@ using GateNetworkDotNet.Gates;
 namespace GateNetworkDotNet.GateTypes
 {
     /// <summary>
-    /// A basic gate type.
+    /// The type of a basic gate.
     /// </summary>
     public class BasicGateType
-        : AbstractGateType
+        : GateType
     {
         #region Private instance fields
 
@@ -21,7 +21,7 @@ namespace GateNetworkDotNet.GateTypes
         private Dictionary< string, string > transitions;
 
         /// <summary>
-        /// The phase of construction of the basic gate.
+        /// The phase of construction.
         /// </summary>
         private BasicGateTypeConstructionPhase constructionPhase;
 
@@ -30,9 +30,13 @@ namespace GateNetworkDotNet.GateTypes
         #region Public instance properties
 
         /// <summary>
-        /// 
+        /// Gets the transitions.
         /// </summary>
-        public Dictionary<string, string> Transitions
+        /// 
+        /// <value>
+        /// The transitions.
+        /// </value>
+        public Dictionary< string, string > Transitions
         {
             get
             {
@@ -41,8 +45,12 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// 
+        /// Gets the number of transitions.
         /// </summary>
+        /// 
+        /// <value>
+        /// The number of transitions.
+        /// </value>
         public int TransitionCount
         {
             get
@@ -67,11 +75,11 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// Determines whether the basic gate type is constructed.
+        /// Determines whether the type of a basic gate is constructed.
         /// </summary>
         /// 
         /// <value>
-        /// <c>True</c> if the basic gate type is constructed, <c>false</c> otherwise.
+        /// <c>True</c> if the type of a basic gate is constructed, <c>false</c> otherwise.
         /// </value>
         public override bool IsConstructed
         {
@@ -86,7 +94,7 @@ namespace GateNetworkDotNet.GateTypes
         #region Public instance constructors
 
         /// <summary>
-        /// Creates a new basic gate type.
+        /// Creates a new type of a basic gate.
         /// </summary>
         public BasicGateType()
         {
@@ -100,23 +108,24 @@ namespace GateNetworkDotNet.GateTypes
         #region Public instance methods
 
         /// <summary>
-        /// 
+        /// Configures the type of a basic gate.
         /// </summary>
-        /// <param name="line"></param>
-        /// <param name="gateTypes"></param>
-        public override void Configure( string line, Dictionary<string, AbstractGateType> gateTypes )
+        /// 
+        /// <param name="line">The line (from the configuration file).</param>
+        /// <param name="gateTypes">The (already defined) types of gates.</param>
+        public override void Configure( string line, Dictionary< string, GateType > gateTypes )
         {
             string keyword = ParseKeyword( line );
 
-            if (keyword.Equals("inputs") || keyword.Equals("outputs") || keyword.Equals("end"))
+            if (keyword.Equals( "inputs" ) || keyword.Equals( "outputs" ) || keyword.Equals( "end" ))
             {
-                base.Configure(line, gateTypes);
+                base.Configure( line, gateTypes );
             }
             else
             {
                 // Set the transitions.
-                string[] transition = ParseTransition(line);
-                AddTransition(transition);
+                string[] transition = ParseTransition( line );
+                AddTransition( transition );
             }
         }
 
@@ -129,25 +138,25 @@ namespace GateNetworkDotNet.GateTypes
         /// <returns>
         /// The transition.
         /// </returns>
-        public string[] ParseTransition(string line)
+        public string[] ParseTransition( string line)
         {
             // Split the line into words.
-            string[] words = line.Split(' ');
+            string[] words = line.Split( ' ' );
             
             // Return all the words.
             return words;
         }
 
         /// <summary>
-        /// Sets the name of the basic gate type.
+        /// Sets the name of the basic type of a gate.
         /// </summary>
         /// 
-        /// <param name="name">The name of the basic gate type.</param>
+        /// <param name="name">The name of the basic type of a gate.</param>
         /// 
-        /// <exception cref="System.ArgumentNullException">
-        /// Condition: <c>name</c> is <c>null</c>.
+        /// <exception cref="System.Exception">
+        /// Condition: The method is called in the wrong phase of construction.
         /// </exception>
-        public override void SetName( string name )
+        protected override void SetName( string name )
         {
             // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.NAME)
@@ -167,8 +176,8 @@ namespace GateNetworkDotNet.GateTypes
         /// 
         /// <param name="inputPlugNames">The names of the input plugs.</param>
         /// 
-        /// <exception cref="System.ArgumentNullException">
-        /// Condition: <c>inputPlugNames</c> is <c>null</c>.
+        /// <exception cref="System.Exception">
+        /// Condition: The method is called in the wrong phase of construction.
         /// </exception>
         public override void SetInputPlugNames( string[] inputPlugNames )
         {
@@ -191,7 +200,7 @@ namespace GateNetworkDotNet.GateTypes
         /// <param name="outputPlugNames">The names of the output plugs.</param>
         /// 
         /// <exception cref="System.ArgumentNullException">
-        /// Condition: <c>outputPlugNames</c> is <c>null</c>.
+        /// Condition: The method is called in the wrong phase of construction.
         /// </exception>
         public override void SetOutputPlugNames( string[] outputPlugNames )
         {
@@ -208,10 +217,21 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// Adds a transition to the transitions.
+        /// Adds a transition to the type of a basic gate.
         /// </summary>
         /// 
         /// <param name="transition">The transition.</param>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>transition</c> is null.
+        /// </exception>
+        /// 
+        /// <exception cref="System.Exception">
+        /// Condition 1: The method has been called in the wrong phase of construction.
+        /// Condition 2: <c>transition</c> contains a transition of incorrect length.
+        /// Condition 3: <c>transition</c> contains an illegal value of an (input or output) plug.
+        /// Condition 4: <c>transition</c> contains a transiiton that has already been added to the transitions.
+        /// </exception>
         public void AddTransition( string[] transition )
         {
             // Validate the phase of construciton.
@@ -223,9 +243,8 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the transition.
             if (transition == null)
             {
-                throw new ArgumentNullException("transition");
+                throw new ArgumentNullException( "transition" );
             }
-
             if (transition.Length != TransitionLength)
             {
                 throw new Exception( "Syntax error (" + transition + ")." );
@@ -234,7 +253,7 @@ namespace GateNetworkDotNet.GateTypes
             {
                 if (!Plug.IsLegalPlugValue( transitionValue ))
                 {
-                    throw new Exception("Syntax error (" + transition + ").");
+                    throw new Exception( "Syntax error (" + transition + ")." );
                 }
             }
 
@@ -278,31 +297,38 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// Ends the construction process.
         /// </summary>
+        /// 
+        /// <exception cref="Syste.Exception">
+        /// Condition: The method has been called in the wrong phase of construction.
+        /// </exception>
         public override void EndConstruction()
         {
+            // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.TRANSITIONS)
             {
                 throw new Exception( "Missing keyword." );
             }
+
+            // Advance the phase of construction.
             constructionPhase = BasicGateTypeConstructionPhase.END;
         }
 
         /// <summary>
-        /// Instantiates the basic gate object.
+        /// Instantiates the type of a basic gate.
         /// </summary>
         /// 
-        /// <param name="name">The name of the basic gate object.</param>
+        /// <param name="name">The name of the basic gate.</param>
         /// 
         /// <returns>
-        /// The basic gate object.
+        /// The basic gate (as an (abstract) gate).
         /// </returns>
-        public override AbstractGate Instantiate( string name )
+        public override Gate Instantiate( string name )
         {
             return new BasicGate( name, this );
         }
 
         /// <summary>
-        /// 
+        /// Evaluates the transiiotn function of the type of a basic gate.
         /// </summary>
         /// 
         /// <param name="inputPlugValues">The values of the input plugs.</param>
@@ -323,12 +349,16 @@ namespace GateNetworkDotNet.GateTypes
             {
                 // The transition fucntion does not contain the mapping for the inputs, hence implicit mapping is used.
                 string outputPlugValue = inputPlugValues.Contains( "?" ) ? "?" : "0";
+                
                 StringBuilder outputPlugValuesSB = new StringBuilder();
                 for (int i = 0; i < OutputPlugCount; i++)
                 {
                     outputPlugValuesSB.Append( outputPlugValue + " " );
                 }
-                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+                if (outputPlugValuesSB.Length != 0)
+                {
+                    outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+                }
                 outputPlugValues = outputPlugValuesSB.ToString();
             }
 

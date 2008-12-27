@@ -8,14 +8,14 @@ using GateNetworkDotNet.Gates;
 namespace GateNetworkDotNet.GateTypes
 {
     /// <summary>
-    /// An abstract gate type.
+    /// The type of an (abstract) gate.
     /// </summary>
-    public abstract class AbstractGateType
+    public abstract class GateType
     {
         #region Private instance fields
 
         /// <summary>
-        /// The name of the gate type.
+        /// The name.
         /// </summary>
         private string name;
 
@@ -34,11 +34,11 @@ namespace GateNetworkDotNet.GateTypes
         #region Public instance properties
 
         /// <summary>
-        /// Gets the name of the gate type.
+        /// Gets the name.
         /// </summary>
         /// 
         /// <value>
-        /// The name of the gate type.
+        /// The name.
         /// </value>
         public string Name
         {
@@ -109,12 +109,11 @@ namespace GateNetworkDotNet.GateTypes
         }
 
         /// <summary>
-        /// Determines whther the (abstract) gate is constructed or not.
+        /// Determines whether the type of an (abstract) gate is constructed.
         /// </summary>
         /// 
         /// <value>
-        /// <c>True</c> if the (abstract) gate is constructed, <c>false</c> otherwise.
-        /// </value>
+        /// <c>True</c> if the type of an (abstract) gate is constructed, <c>false</c> otherwise.
         public abstract bool IsConstructed
         {
             get;
@@ -125,7 +124,7 @@ namespace GateNetworkDotNet.GateTypes
         #region Public static methods
 
         /// <summary>
-        /// Parses a line for a gate type.
+        /// Parses a line for a type of a gate.
         /// </summary>
         /// 
         /// <param name="line">The line.</param>
@@ -137,42 +136,47 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>line</c> is <c>null</c>.
         /// </exception>
-        public static AbstractGateType ParseGateType(string line)
+        /// <exception cref="System.Exception">
+        /// Condition 1: <c>line</c> contains one word and it is not "network".
+        /// Condition 2: <c>line</c> contains two words and the first one is neither "gate" nor "composite".
+        /// Condition 3: <c>line</c> contains more than two words.
+        /// </exception>
+        public static GateType ParseGateType( string line )
         {
             // Validate the line.
             if (line == null)
             {
-                throw new ArgumentNullException(line);
+                throw new ArgumentNullException( line );
             }
 
-            AbstractGateType gateType;
+            GateType gateType;
 
-            string[] gateTypeClassAndName = line.Split(' ');
+            string[] gateTypeClassAndName = line.Split( ' ' );
             switch (gateTypeClassAndName.Length)
             {
                 case 1:
 
                     // Network construction.
-                    if (gateTypeClassAndName[0].Equals("network"))
+                    if (gateTypeClassAndName[ 0 ].Equals( "network" ))
                     {
                         gateType = new NetworkGateType();
                     }
                     else
                     {
-                        throw new Exception("Syntax error.");
+                        throw new Exception( "Syntax error." );
                     }
-                    gateType.SetName("network");
+                    gateType.SetName( "networkGateType" );
                     break;
 
                 case 2:
 
                     // Basic or composite gate construction.
-                    if (gateTypeClassAndName[0].Equals("gate"))
+                    if (gateTypeClassAndName[ 0 ].Equals( "gate" ))
                     {
                         // Basic gate construction.
                         gateType = new BasicGateType();
                     }
-                    else if (gateTypeClassAndName[0].Equals("composite"))
+                    else if (gateTypeClassAndName[ 0 ].Equals( "composite" ))
                     {
                         // Composite gate construction.
                         gateType = new CompositeGateType();
@@ -180,15 +184,15 @@ namespace GateNetworkDotNet.GateTypes
                     else
                     {
                         // Syntax error.
-                        throw new Exception("Syntax error.");
+                        throw new Exception( "Syntax error." );
                     }
-                    gateType.SetName(gateTypeClassAndName[1]);
+                    gateType.SetName( gateTypeClassAndName[ 1 ] );
                     break;
 
                 default:
 
                     // Syntax error.
-                    throw new Exception("Syntax error.");
+                    throw new Exception( "Syntax error." );
                     break;
             }
             return gateType;
@@ -199,34 +203,39 @@ namespace GateNetworkDotNet.GateTypes
         #region Public instance mehods
 
         /// <summary>
-        /// 
+        /// Configures the type of an (abstract) gate.
         /// </summary>
-        /// <param name="line"></param>
-        /// <param name="gateTypes"></param>
-        public virtual void Configure( string line, Dictionary< string, AbstractGateType > gateTypes )
+        /// 
+        /// <param name="line">The line (from the configuration file).</param>
+        /// <param name="gateTypes">The (already defined) types of gates.</param>
+        /// 
+        /// <exception cref="System.Exception">
+        /// Condition: <c>line</c> contains an unknown keyword.
+        /// </exception>
+        public virtual void Configure( string line, Dictionary< string, GateType > gateTypes )
         {
             string keyword = ParseKeyword( line );
 
-            if (keyword.Equals("inputs"))
+            if (keyword.Equals( "inputs" ))
             {
                 // Set the names of the input plugs.
-                string[] inputPlugNames = ParsePlugNames(line);
-                SetInputPlugNames(inputPlugNames);
+                string[] inputPlugNames = ParsePlugNames( line );
+                SetInputPlugNames( inputPlugNames );
             }
-            else if (keyword.Equals("outputs"))
+            else if (keyword.Equals( "outputs" ))
             {
                 // Set the names of the output plugs.
-                string[] outputPlugNames = ParsePlugNames(line);
-                SetOutputPlugNames(outputPlugNames);
+                string[] outputPlugNames = ParsePlugNames( line );
+                SetOutputPlugNames( outputPlugNames );
             }
-            else if (keyword.Equals("end"))
+            else if (keyword.Equals( "end" ))
             {
                 // End the construction process.
                 EndConstruction();
             }
             else
             {
-                throw new Exception("Syntax error.");
+                throw new Exception( "Syntax error." );
             }
         }
 
@@ -241,13 +250,13 @@ namespace GateNetworkDotNet.GateTypes
         /// <returns>
         /// The keyword.
         /// </returns>
-        public string ParseKeyword(string line)
+        protected string ParseKeyword( string line )
         {
             // Split the line into words.
-            string[] words = line.Split(' ');
+            string[] words = line.Split( ' ' );
 
             // Return only the first word.
-            return words[0];
+            return words[ 0 ];
         }
 
 
@@ -260,30 +269,33 @@ namespace GateNetworkDotNet.GateTypes
         /// <returns>
         /// The names of the (input or output) plugs.
         /// </returns>
-        public string[] ParsePlugNames(string line)
+        private string[] ParsePlugNames( string line )
         {
             // Split the line into words.
-            string[] words = line.Split(' ');
+            string[] words = line.Split( ' ' );
 
             // Return all the words except for the first one.
-            string[] plugNames = new string[words.Length - 1];
+            string[] plugNames = new string[ words.Length - 1 ];
             for (int i = 0; i < plugNames.Length; i++)
             {
-                plugNames[i] = words[i + 1];
+                plugNames[ i ] = words[ i + 1 ];
             }
             return plugNames;
         }
 
         /// <summary>
-        /// Sets the name of the (abstract) gate type.
+        /// Sets the name of the (abstract) type of a gate.
         /// </summary>
         /// 
-        /// <param name="name">The name of the (abstract) gate type.</param>
+        /// <param name="name">The name of the (abstract) type of a gate.</param>
         /// 
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>name</c> is <c>null</c>.
         /// </exception>
-        public virtual void SetName( string name )
+        /// <exception cref="System.Exception">
+        /// Condition: <c>name</c> is not a legal name.
+        /// </exception>
+        protected virtual void SetName( string name )
         {
             // Validate the name.
             if (name == null)
@@ -294,6 +306,7 @@ namespace GateNetworkDotNet.GateTypes
             {
                 throw new Exception( "Syntax error (" + name + ")." );
             }
+
             this.name = name;
         }
 
@@ -306,6 +319,10 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>inputPlugNames</c> is <c>null</c>.
         /// </exception>
+        /// <exception cref="System.Exception">
+        /// Condition 1: <c>inputPlugNames</c> contains an illegal name of an input plug.
+        /// Condition 2: <c>inputPlugNames</c> contains a duplcit name of an input plug.
+        /// </exception>
         public virtual void SetInputPlugNames( string[] inputPlugNames )
         {
             // Validate the names of the input plugs.
@@ -313,7 +330,6 @@ namespace GateNetworkDotNet.GateTypes
             {
                 throw new ArgumentNullException( "inputPlugNames" );
             }
-
             StringCollection inputPlugNamesCollection = new StringCollection();
             foreach (string inputPlugName in inputPlugNames)
             {
@@ -338,7 +354,12 @@ namespace GateNetworkDotNet.GateTypes
         /// <param name="outputPlugNames">The names of the output plugs.</param>
         /// 
         /// <exception cref="System.ArgumentNullException">
-        /// Condition: <c>outputPlugNames</c> is <c>null</c>.
+        /// Condition: <c>outputputPlugNames</c> is <c>null</c>.
+        /// </exception>
+        /// <exception cref="System.Exception">
+        /// Condition 1: <c>outputPlugNames</c> contains no names of output plugs.
+        /// Condition 2: <c>outputPlugNames</c> contains an illegal name of an output plug.
+        /// Condition 3: <c>outputPlugNames</c> contains a duplcit name of an output plug.
         /// </exception>
         public virtual void SetOutputPlugNames( string[] outputPlugNames )
         {
@@ -347,12 +368,10 @@ namespace GateNetworkDotNet.GateTypes
             {
                 throw new ArgumentNullException( "outputPlugNames" );
             }
-
             if (outputPlugNames.Length == 0)
             {
-                throw new Exception("Syntax error.");
+                throw new Exception( "Syntax error." );
             }
-
             StringCollection outputPlugNamesCollection = new StringCollection();
             foreach (string outputPlugName in outputPlugNames)
             {
@@ -370,18 +389,21 @@ namespace GateNetworkDotNet.GateTypes
             this.outputPlugNames = outputPlugNames;
         }
 
+        /// <summary>
+        /// Ends the construction process.
+        /// </summary>
         public abstract void EndConstruction();
 
         /// <summary>
-        /// Instantiates the (abstract) gate object.
+        /// Instantiates the type of an (abstract) gate.
         /// </summary>
         /// 
-        /// <param name="name">The name of the (abstract) gate object.</param>
+        /// <param name="name">The name of the (abstract) gate.</param>
         /// 
         /// <returns>
-        /// The (abstract) gate object.
+        /// The (abstract) gate.
         /// </returns>
-        public abstract AbstractGate Instantiate( string name );
+        public abstract Gate Instantiate( string name );
 
         /// <summary>
         /// Gets the index of an input plug specified by its name.

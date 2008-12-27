@@ -11,7 +11,7 @@ namespace GateNetworkDotNet.Gates
     /// A basic gate.
     /// </summary>
     public class BasicGate
-        : AbstractGate
+        : Gate
     {
         #region Private instance fields
 

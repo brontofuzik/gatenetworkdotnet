@@ -3,6 +3,6 @@
     <StartArguments>../../DU1-Priklady/4bitAdder/4bitAdder-3.txt</StartArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <StartArguments>../../DU1-Priklady\4bitAdder\4bitAdder-3.txt</StartArguments>
+    <StartArguments>../../DU1-Priklady\1bitAdder\1bitAdder.txt</StartArguments>
   </PropertyGroup>
 </Project>

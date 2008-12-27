@@ -45,10 +45,9 @@
     <Compile Include="Gates\Connection.cs" />
     <Compile Include="Gates\Gate.cs" />
     <Compile Include="Gates\Plug.cs" />
-    <Compile Include="GateTypes\AbstractCompositeGateType.cs" />
-    <Compile Include="GateTypes\BasicGateType.cs" />
     <Compile Include="GateTypes\CompositeGateType.cs" />
-    <Compile Include="GateTypes\AbstractGateType.cs" />
+    <Compile Include="GateTypes\BasicGateType.cs" />
+    <Compile Include="GateTypes\GateType.cs" />
     <Compile Include="GateTypes\NetworkGateType.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
