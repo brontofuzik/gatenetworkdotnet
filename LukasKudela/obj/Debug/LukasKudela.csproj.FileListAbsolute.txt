@@ -1,0 +1,5 @@
+C:\Documents and Settings\Lukáš Kúdela\Dokumenty\Visual Studio 2008\Projects\GateNetworkDotNet\LukasKudela\bin\Debug\LukasKudela.exe
+C:\Documents and Settings\Lukáš Kúdela\Dokumenty\Visual Studio 2008\Projects\GateNetworkDotNet\LukasKudela\bin\Debug\LukasKudela.pdb
+C:\Documents and Settings\Lukáš Kúdela\Dokumenty\Visual Studio 2008\Projects\GateNetworkDotNet\LukasKudela\obj\Debug\ResolveAssemblyReference.cache
+C:\Documents and Settings\Lukáš Kúdela\Dokumenty\Visual Studio 2008\Projects\GateNetworkDotNet\LukasKudela\obj\Debug\LukasKudela.exe
+C:\Documents and Settings\Lukáš Kúdela\Dokumenty\Visual Studio 2008\Projects\GateNetworkDotNet\LukasKudela\obj\Debug\LukasKudela.pdb

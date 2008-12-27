@@ -6,7 +6,7 @@ using GateNetworkDotNet.Exceptions;
 namespace GateNetworkDotNet.Gates
 {
     /// <summary>
-    /// An plug.
+    /// A plug.
     /// </summary>
     public class Plug
     {
