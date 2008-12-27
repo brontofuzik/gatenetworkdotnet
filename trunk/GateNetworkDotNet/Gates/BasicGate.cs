@@ -11,7 +11,7 @@ namespace GateNetworkDotNet.Gates
     /// A basic gate.
     /// </summary>
     public class BasicGate
-        : Gate
+        : AbstractGate
     {
         #region Private instance fields
 
@@ -61,12 +61,12 @@ namespace GateNetworkDotNet.Gates
         /// </summary>
         /// 
         /// <param name="inputPlugValuesString">The values of the input plugs.</param>
-        public override void SetInputPlugValues(string inputPlugValuesString )
+        public override void SetInputPlugValues( string inputPlugValuesString )
         {
             string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
             if (inputPlugValues.Length != InputPlugCount)
             {
-                throw new MyException( "Syntax error." );
+                throw new Exception( "Syntax error." );
             }
 
             for (int i = 0; i < InputPlugCount; i++)

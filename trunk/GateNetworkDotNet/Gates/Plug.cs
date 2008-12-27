@@ -30,7 +30,7 @@ namespace GateNetworkDotNet.Gates
         /// <summary>
         /// The parent gate of the plug.
         /// </summary>
-        private Gate parentGate;
+        private AbstractGate parentGate;
 
         #endregion // Private instance fields
 
@@ -53,7 +53,7 @@ namespace GateNetworkDotNet.Gates
             {
                 if (!IsLegalPlugValue( value ))
                 {
-                    throw new MyException("Syntax error.");
+                    throw new Exception("Syntax error.");
                 }
                 this.value = value;
             }
@@ -70,7 +70,7 @@ namespace GateNetworkDotNet.Gates
         /// <exception cref="System.ArgumentNullException">
         /// Condition: <c>parentGate</c> is <c>null</c>.
         /// </exception>
-        public Plug( Gate parentGate )
+        public Plug( AbstractGate parentGate )
         {
             value = "?";
 
