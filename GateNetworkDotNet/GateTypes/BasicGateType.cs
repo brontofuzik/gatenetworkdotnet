@@ -368,6 +368,9 @@ namespace GateNetworkDotNet.GateTypes
         #endregion // Public instance methods
     }
 
+    /// <summary>
+    /// The phase of construction of a type of a basic gate.
+    /// </summary>
     enum BasicGateTypeConstructionPhase
     {
         BEGINNING,

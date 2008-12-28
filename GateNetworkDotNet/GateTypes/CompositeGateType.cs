@@ -493,6 +493,9 @@ namespace GateNetworkDotNet.GateTypes
         #endregion // Public instance methods
     }
 
+    /// <summary>
+    /// The phase of construction of a type of a composite gate.
+    /// </summary>
     enum CompositeGateTypeConstructionPhase
     {
         BEGINNING,
