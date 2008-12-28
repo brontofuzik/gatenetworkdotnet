@@ -86,6 +86,24 @@ namespace GateNetworkDotNet.Gates
 
         #endregion // Public instance constructors
 
+        #region Public static methods
+
+        /// <summary>
+        /// Determines whether a value of a (input or output) plug is a legal.
+        /// </summary>
+        /// 
+        /// <param name="plugValue">The value of a (input or output) plug.</param>
+        /// 
+        /// <returns>
+        /// <c>True</c> if the value of a plug is legal, <c>false</c> otherwise.
+        /// </returns>
+        public static bool IsLegalPlugValue(string plugValue)
+        {
+            return (plugValue.Equals("0") || plugValue.Equals("1") || plugValue.Equals("?"));
+        }
+
+        #endregion // Public static methods
+
         #region Public instance methods
 
         /// <summary>
@@ -141,15 +159,5 @@ namespace GateNetworkDotNet.Gates
         }
 
         #endregion // Public instance methods
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="plugValue"></param>
-        /// <returns></returns>
-        public static bool IsLegalPlugValue( string plugValue )
-        {
-            return (plugValue.Equals("0") || plugValue.Equals("1") || plugValue.Equals("?"));
-        }
     }
 }

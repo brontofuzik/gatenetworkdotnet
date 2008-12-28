@@ -14,14 +14,14 @@ namespace GateNetworkDotNet
     /// <summary>
     /// An entry point of the application.
     /// </summary>
-    class Program
+    public class Program
     {
         /// <summary>
         /// An entry point of the application.
         /// </summary>
         /// 
         /// <param name="args">The command line arguments.</param>
-        static void Main( string[] args )
+        public static void Main( string[] args )
         {
             StreamReader streamReader = null;
 
@@ -272,6 +272,923 @@ namespace GateNetworkDotNet.Exceptions
         }
 
         #endregion // Public instance constructors
+    }
+}
+
+namespace GateNetworkDotNet.Gates
+{
+    
+    /// <summary>
+    /// A basic gate.
+    /// </summary>
+    public class BasicGate
+        : Gate
+    {
+        #region Private instance fields
+
+        /// <summary>
+        /// The type of the basic gate.
+        /// </summary>
+        private BasicGateType type;
+        
+        #endregion // Private instance fields
+
+        #region Public instance properties
+
+        #endregion // Public instance properties
+
+        #region Public instance contructors
+
+        /// <summary>
+        /// Creates a new basic gate.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the basic gate.</param>
+        /// <param name="type">The type of the basic gate.</param>
+        /// 
+        /// <exception cref="GateNetworkDotNet.Exceptions.IllegalNameException">
+        /// Condition: <c>name</c> is not a legal basic gate name.
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>type</c> is <c>null</c>.
+        /// </exception>
+        public BasicGate( string name, BasicGateType type )
+            : base( name, type )
+        {
+            // Validate the basic gate type.
+            if (type == null)
+            {
+                throw new ArgumentNullException( "type" );
+            }
+            this.type = type;
+        }
+
+        #endregion // Public instance constructors
+
+        #region Public instance methods
+
+        /// <summary>
+        /// Sets the values of the input plugs.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugValuesString">The values of the input plugs.</param>
+        public override void SetInputPlugValues( string inputPlugValuesString )
+        {
+            string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
+            if (inputPlugValues.Length != InputPlugCount)
+            {
+                throw new Exception( "Syntax error." );
+            }
+
+            for (int i = 0; i < InputPlugCount; i++)
+            {
+                InputPlugs[ i ].Value = inputPlugValues[ i ];
+            }
+        }
+
+        /// <summary>
+        /// Initializes the basic gate.
+        /// </summary>
+        public override void Initialize()
+        {
+            if (InputPlugCount == 0)
+            {
+                // If the gate has no input plugs, it is initialized using the transition function.
+                UpdateOutputPlugValues();
+            }
+            else
+            {
+                // If the basic gate has at least one input plug, it is initialized using the "?" values.
+                StringBuilder outputPlugValuesSB = new StringBuilder();
+                for (int i = 0; i < OutputPlugCount; i++)
+                {
+                    outputPlugValuesSB.Append( "?" + " " );
+                }
+                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+                string outputPlugValues = outputPlugValuesSB.ToString();
+
+                SetOutputPlugValues( outputPlugValues );
+            }
+        }
+
+        /// <summary>
+        /// Updates the values of the input plugs of the basic gate.
+        /// </summary>
+        public override bool UpdateInputPlugValues()
+        {
+            bool updatePerformed = false;
+
+            foreach (Plug inputPlug in InputPlugs)
+            {
+                updatePerformed = inputPlug.UpdatePlugValue() || updatePerformed;
+            }
+
+            return updatePerformed;
+        }
+
+        /// <summary>
+        /// Evaluates the basic gate.
+        /// </summary>
+        public override void UpdateOutputPlugValues()
+        {
+            string inputPlugValues = GetInputPlugValues();
+
+            string outputPlugValues = type.Evaluate( inputPlugValues );
+
+            SetOutputPlugValues( outputPlugValues );
+        }
+
+        #endregion // Public instance methods
+    }
+    
+    /// <summary>
+    /// A composite gate.
+    /// </summary>
+    public class CompositeGate
+        : Gate
+    {
+        #region Private instance fields
+
+        /// <summary>
+        /// The type of the composite gate.
+        /// </summary>
+        private CompositeGateType type;
+
+        /// <summary>
+        /// The nested gates.
+        /// </summary>
+        private Dictionary< string, Gate > nestedGates;
+
+        /// <summary>
+        /// The connections;
+        /// </summary>
+        private Connection[] connections; 
+
+        #endregion // Private instance fields
+
+        #region Public instance properties
+
+        /// <summary>
+        /// Gets the nested gates.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The nested gates.
+        /// </value>
+        public Dictionary< string, Gate > NestedGates
+        {
+            get
+            {
+                return nestedGates;
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of the nested gates.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The number of the nested gates.
+        /// </value>
+        public int NestedGateCount
+        {
+            get
+            {
+                return type.NestedGateCount;
+            }
+        }
+
+        /// <summary>
+        /// Gets the connections
+        /// </summary>
+        /// 
+        /// <value>
+        /// The connections.
+        /// </value>
+        public Connection[] Connections
+        {
+            get
+            {
+                return connections;
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of connections.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The number of connections.
+        /// </value>
+        public int ConnectionCount
+        {
+            get
+            {
+                return type.ConnectionCount;
+            }
+        }
+
+        #endregion // Public instance properties
+
+        #region Public instance contructors
+
+        /// <summary>
+        /// Creates a new composite gate.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the composite gate.</param>
+        /// <param name="type">The type of the composite gate.</param>
+        /// 
+        /// <exception cref="Network.Exceptions.IllegalNameException">
+        /// Condition: <c>name</c> is not a legal composite gate name.
+        /// </exception>
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>type</c> is <c>null</c>.
+        /// </exception>
+        public CompositeGate( string name, CompositeGateType type )
+            : base( name, type )
+        {
+            // Validate the composite gate type.
+            if (type == null)
+            {
+                throw new ArgumentNullException();
+            }
+            this.type = type;
+
+            //
+            // Construct the nested gates.
+            //
+            nestedGates = new Dictionary< string, Gate >();
+            foreach (KeyValuePair< string, GateType > kvp in type.NestedGateTypes)
+            {
+                string nestedGateName = kvp.Key;
+                GateType nestedGateType = kvp.Value;
+                Gate nestedGate = nestedGateType.Instantiate( nestedGateName );
+
+                nestedGates.Add( nestedGateName, nestedGate ); 
+            }
+
+            //
+            // Construct the connections.
+            //
+            connections = new Connection[ ConnectionCount ];
+            int connectionIndex = 0;
+            foreach (KeyValuePair< string, string > kvp in type.Connections)
+            {
+                //
+                // Get the target plug.
+                //
+                string connectionTarget = kvp.Key;
+                string[] targetPlugName = connectionTarget.Split( '.' );
+                bool nestedTargetPlug = (targetPlugName.Length != 1);
+                
+                // Depending on whether the target plug is a nested plug, the target gate is ...
+                Gate targetGate = nestedTargetPlug ?
+                    // ... a nested gate.
+                    nestedGates[ targetPlugName[ 0 ] ] :
+                    // ... this composite gate.
+                    this;
+                
+                // Depending on whether the target plug is a nested plug, the target plug is ...
+                Plug targetPlug = nestedTargetPlug ?
+                    // ... an input plug of a nested gate.
+                    targetGate.GetInputPlugByName( targetPlugName[ 1 ] ) :
+                    // ... an output plug of this composite gate.
+                    targetGate.GetOutputPlugByName( targetPlugName[ 0 ] );
+                    
+                //
+                // Get the source plug.
+                //
+                string connectionSource = kvp.Value;
+                string[] sourcePlugName = connectionSource.Split( '.' );
+                bool nestedSourcePlug = (sourcePlugName.Length != 1);
+
+                // Depending on whether the source plug is a nested plug, the source gate is ...
+                Gate sourceGate = nestedSourcePlug ?
+                    // ... a nested gate.
+                    nestedGates[ sourcePlugName[ 0 ] ] :
+                    // ... this composite gate.
+                    this;
+
+                // Depending on whether the source plug is a nested plug, the source plug is ...
+                Plug sourcePlug = nestedSourcePlug ?
+                    // ... an output plug of a nested gate.
+                    sourceGate.GetOutputPlugByName( sourcePlugName[ 1 ] ) :
+                    // ... an input plug of this composite gate.
+                    sourceGate.GetInputPlugByName( sourcePlugName[ 0 ] );
+
+                // Construct the connection.
+                Connection connection = new Connection();
+                sourcePlug.PlugTargetConnection( connection );
+                targetPlug.PlugSourceConnection( connection );
+
+                connections[ connectionIndex++ ] = connection;
+            }
+
+            //
+            //
+            //
+            GetInputPlugByName( "0" ).Value = "0";
+            GetInputPlugByName( "1" ).Value = "1";
+        }
+
+        #endregion // Public instance constructors
+
+        #region Public instance methods
+
+        /// <summary>
+        /// Sets the values of the input plugs.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugValuesString">The values of the input plugs.</param>
+        public override void SetInputPlugValues( string inputPlugValuesString )
+        {
+            string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
+            if (inputPlugValues.Length != InputPlugCount - 2)
+            {
+                throw new Exception( "Syntax error." );
+            }
+
+            for (int i = 0; i < InputPlugCount - 2; i++)
+            {
+                InputPlugs[ i ].Value = inputPlugValues[ i ];
+            }
+        }
+
+        /// <summary>
+        /// Initializes the composite gate.
+        /// </summary>
+        public override void Initialize()
+        {
+            foreach (KeyValuePair< string, Gate > kvp in nestedGates)
+            {
+                Gate nestedGate = kvp.Value;
+                nestedGate.Initialize();
+            }
+        }
+
+        /// <summary>
+        /// Updates the values of the input plugs of the composite gate.
+        /// </summary>
+        public override bool UpdateInputPlugValues()
+        {
+            foreach (Plug inputPlug in InputPlugs)
+            {
+                inputPlug.UpdatePlugValue();
+            }
+
+            bool updatePerformed = false;
+
+            foreach (KeyValuePair< string, Gate > kvp in nestedGates)
+            {
+                Gate nestedGate = kvp.Value;
+                updatePerformed = nestedGate.UpdateInputPlugValues() || updatePerformed;
+            }
+
+            return updatePerformed;
+        }
+
+        /// <summary>
+        /// Evaluates the composite gate.
+        /// </summary>
+        public override void UpdateOutputPlugValues()
+        {
+            foreach (KeyValuePair< string, Gate > kvp in nestedGates)
+            {
+                Gate nestedGate = kvp.Value;
+                nestedGate.UpdateOutputPlugValues();
+            }
+            foreach (Plug outputPlug in OutputPlugs)
+            {
+                outputPlug.UpdatePlugValue();
+            }
+        }
+
+        /// <summary>
+        /// Evaluates the (abstract) gate.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugValues">The values of the input plugs.</param>
+        /// 
+        /// <returns>
+        /// The computation time (in cycles) and the values of the output plugs.
+        /// </returns>
+        public string Evaluate( string inputPlugValues )
+        {
+            SetInputPlugValues( inputPlugValues );
+            bool updatePerformed = true;
+
+            int cycles = 0;
+            while (cycles < 1000000)
+            {
+                // Update the values of the input plugs.
+                updatePerformed = UpdateInputPlugValues();
+
+                if (!updatePerformed)
+                {
+                    break;
+                }
+
+                // Update the values of the output plugs.
+                UpdateOutputPlugValues();
+
+                cycles++;
+            }
+
+            return cycles + " " + GetOutputPlugValues();
+        }
+
+        #endregion // Public instance methods
+    }
+
+
+    /// <summary>
+    /// A connection.
+    /// </summary>
+    public class Connection
+    {
+        #region Private instance fields
+
+        /// <summary>
+        /// The source plug.
+        /// </summary>
+        private Plug sourcePlug;
+
+        /// <summary>
+        /// The target plug.
+        /// </summary>
+        private Plug targetPlug;
+
+        #endregion // Private instance fields
+
+        #region Public instance properties
+
+        /// <summary>
+        /// Gets or sets the source plug.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The source plug.
+        /// </value>
+        public Plug SourcePlug
+        {
+            get
+            {
+                return sourcePlug;
+            }
+            set
+            {
+                sourcePlug = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the target plug.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The target plug.
+        /// </value>
+        public Plug TargetPlug
+        {
+            get
+            {
+                return targetPlug;
+            }
+            set
+            {
+                targetPlug = value;
+            }
+        }
+
+        #endregion // Public instance properties
+    }
+
+    /// <summary>
+    /// An abstract gate.
+    /// </summary>
+    public abstract class Gate
+    {
+        #region Private instance fields
+
+        /// <summary>
+        /// The name of the (abstract) gate.
+        /// </summary>
+        private string name;
+
+        /// <summary>
+        /// The type of the (abstract) gate.
+        /// </summary>
+        private GateType type;
+
+        /// <summary>
+        /// The input plugs.
+        /// </summary>
+        private Plug[] inputPlugs;
+
+        /// <summary>
+        /// The output plugs.
+        /// </summary>
+        private Plug[] outputPlugs;
+
+        #endregion // Private instance fields
+
+        #region Public instance properties
+
+        /// <summary>
+        /// Gets the name of the gate.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The name of the gate type.
+        /// </value>
+        public string Name
+        {
+            get
+            {
+                return name;
+            }
+        }
+
+        /// <summary>
+        /// Gets the input plugs.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The input plugs.
+        /// </value>
+        public Plug[] InputPlugs
+        {
+            get
+            {
+                return inputPlugs;
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of the input plugs.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The number of the input plugs.
+        /// </value>
+        public int InputPlugCount
+        {
+            get
+            {
+                return type.InputPlugCount;
+            }
+        }
+
+        /// <summary>
+        /// Gets the output plugs.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The output plugs.
+        /// </value>
+        public Plug[] OutputPlugs
+        {
+            get
+            {
+                return outputPlugs;
+            }
+        }
+
+        /// <summary>
+        /// Gets the number of the output plugs.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The number of the output plugs.
+        /// </value>
+        public int OutputPlugCount
+        {
+            get
+            {
+                return type.OutputPlugCount;
+            }
+        }
+
+        #endregion // Public instance properties
+
+        #region Protected instance constructors
+
+        /// <summary>
+        /// Creates a new gate.
+        /// </summary>
+        /// 
+        /// <param name="name">The name of the gate.</param>
+        /// <param name="type">The type of the gate.</param>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition 1: <c>name</c> is <c>null</c>.
+        /// Condition 2: <c>type</c> is <c>null</c>.
+        /// </exception>
+        protected Gate( string name, GateType type )
+        {
+            // Validate the name.
+            if (!Program.IsLegalName( name ))
+            {
+                throw new ArgumentException( name );
+            }
+            this.name = name;
+
+            // Validate the (abstract) gate type.
+            if (type == null)
+            {
+                throw new ArgumentNullException();
+            }
+            this.type = type;
+
+            // Create the input plugs.
+            inputPlugs = new Plug[ InputPlugCount ];
+            for (int i = 0; i < InputPlugCount; i++)
+            {
+                inputPlugs[ i ] = new Plug( this );
+            }
+
+            // Create the output plugs.
+            outputPlugs = new Plug[ OutputPlugCount ];
+            for (int i = 0; i < OutputPlugCount; i++)
+            {
+                outputPlugs[ i ] = new Plug( this );
+            }
+        }
+
+        #endregion // Protected instance constructors
+
+        #region Public instance methods
+
+        /// <summary>
+        /// Gets an input plug specified by its name.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugName">The name of the input plug.</param>
+        /// 
+        /// <returns>
+        /// The input plug (or <c>null</c> if such input plug does not exist).
+        /// </returns>
+        public Plug GetInputPlugByName( string inputPlugName )
+        {
+            int inputPlugIndex = type.GetInputPlugIndex( inputPlugName );
+            return (inputPlugIndex != -1) ? InputPlugs[ inputPlugIndex ] : null;
+        }
+
+        /// <summary>
+        /// Gets an output plug specified by its name.
+        /// </summary>
+        /// 
+        /// <param name="outputPlugName">The name of the output plug.</param>
+        /// 
+        /// <returns>
+        /// The output plug (or <c>null</c> if such output plug does not exist).
+        /// </returns>
+        public Plug GetOutputPlugByName( string outputPlugName )
+        {
+            int outputPlugIndex = type.GetOutputPlugIndex( outputPlugName );
+            return (outputPlugIndex != -1) ? OutputPlugs[ outputPlugIndex ] : null;
+        }
+
+        /// <summary>
+        /// Gets the values of the input plugs.
+        /// </summary>
+        /// 
+        /// <returns>
+        /// The values of the input plugs.
+        /// </returns>
+        public string GetInputPlugValues()
+        {
+            // Build the string representation of the values of the input plugs.
+            StringBuilder inputPlugValuesSB = new StringBuilder();
+            for (int i = 0; i < InputPlugCount; i++)
+            {
+                inputPlugValuesSB.Append( InputPlugs[ i ].Value + " " );
+            }
+            // Remove the trailing space character if necessary.
+            if (inputPlugValuesSB.Length != 0)
+            {
+                inputPlugValuesSB.Remove( inputPlugValuesSB.Length - 1, 1 );
+            }
+            return inputPlugValuesSB.ToString();
+        }
+
+        /// <summary>
+        /// Sets the values of the input plugs.
+        /// </summary>
+        /// 
+        /// <param name="inputPlugValuesString">The values of the input plugs.</param>
+        public abstract void SetInputPlugValues( string inputPlugValuesString );
+
+        /// <summary>
+        /// Gets the values of the output plugs.
+        /// </summary>
+        /// 
+        /// <returns>
+        /// The values of the output plugs.
+        /// </returns>
+        public string GetOutputPlugValues()
+        {
+            // Build the string representation of the values of the output plugs.
+            StringBuilder outputPlugValuesSB = new StringBuilder();
+            for (int i = 0; i < OutputPlugCount; i++)
+            {
+                outputPlugValuesSB.Append( OutputPlugs[ i ].Value + " " );
+            }
+            // Remove the trailing space character if necessary.
+            if (outputPlugValuesSB.Length != 0)
+            {
+                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+            }
+            return outputPlugValuesSB.ToString();
+        }
+
+        /// <summary>
+        /// Sets the values of the output plugs.
+        /// </summary>
+        /// 
+        /// <param name="outputPlugValues">The values of the output plugs.</param>
+        public void SetOutputPlugValues( string outputPlugValuesString )
+        {
+            string[] outputPlugValues = outputPlugValuesString.Split( ' ' );
+            for (int i = 0; i < OutputPlugCount; i++)
+            {
+                OutputPlugs[ i ].Value = outputPlugValues[ i ];
+            }
+        }
+
+        /// <summary>
+        /// Initializes the (abstract) gate.
+        /// </summary>
+        public abstract void Initialize();
+
+        /// <summary>
+        /// Updates the values of the input plugs of the (abstract) gate.
+        /// </summary>
+        public abstract bool UpdateInputPlugValues();
+
+        /// <summary>
+        /// Evaluates the (abstract) gate.
+        /// </summary>
+        public abstract void UpdateOutputPlugValues();
+
+        #endregion // Public instance methods
+    }
+
+    /// <summary>
+    /// A plug.
+    /// </summary>
+    public class Plug
+    {
+        #region Private insatance fields
+
+        /// <summary>
+        /// The value of the plug.
+        /// </summary>
+        private string value;
+
+        /// <summary>
+        /// The input connection plugged into the plug.
+        /// </summary>
+        private Connection sourceConnection;
+
+        /// <summary>
+        /// The output connections plugged into the plug.
+        /// </summary>
+        private List< Connection > targetConnections;
+
+        /// <summary>
+        /// The parent gate of the plug.
+        /// </summary>
+        private Gate parentGate;
+
+        #endregion // Private instance fields
+
+        #region Public instance properties
+
+        /// <summary>
+        /// Gets or sets the value of the plug.
+        /// </summary>
+        /// 
+        /// <value>
+        /// The value of the plug.
+        /// </value>
+        public string Value
+        {
+            get
+            {
+                return value;
+            }
+            set
+            {
+                if (!IsLegalPlugValue( value ))
+                {
+                    throw new Exception( "Syntax error." );
+                }
+                this.value = value;
+            }
+        }
+
+        #endregion // Public instance properties
+
+        #region Public instance constructors
+        
+        /// <summary>
+        /// Creates a new plug.
+        /// </summary>
+        /// 
+        /// <exception cref="System.ArgumentNullException">
+        /// Condition: <c>parentGate</c> is <c>null</c>.
+        /// </exception>
+        public Plug( Gate parentGate )
+        {
+            value = "?";
+
+            sourceConnection = null;
+            targetConnections = new List< Connection >();
+
+            if (parentGate == null)
+            {
+                throw new ArgumentNullException();
+            }
+            this.parentGate = parentGate;
+        }
+
+        #endregion // Public instance constructors
+
+        #region Public static methods
+
+        /// <summary>
+        /// Determines whether a value of a (input or output) plug is a legal.
+        /// </summary>
+        /// 
+        /// <param name="plugValue">The value of a (input or output) plug.</param>
+        /// 
+        /// <returns>
+        /// <c>True</c> if the value of a plug is legal, <c>false</c> otherwise.
+        /// </returns>
+        public static bool IsLegalPlugValue( string plugValue )
+        {
+            return (plugValue.Equals( "0" ) || plugValue.Equals( "1" ) || plugValue.Equals( "?" ));
+        }
+
+        #endregion // Public static methods
+
+        #region Public instance methods
+
+        /// <summary>
+        /// Plugs a source connection into the plug.
+        /// </summary>
+        /// 
+        /// <param name="sourceConnection">The source connection.</param>
+        public void PlugSourceConnection( Connection sourceConnection )
+        {
+            if (this.sourceConnection != null)
+            {
+                // TODO: Provide more specific exception.
+                throw new Exception();
+            }
+            this.sourceConnection = sourceConnection;
+            
+            sourceConnection.TargetPlug = this;
+        }
+
+        /// <summary>
+        /// Plugs a target connecion into the plug.
+        /// </summary>
+        /// 
+        /// <param name="targetConnection">The target connection.</param>
+        public void PlugTargetConnection( Connection targetConnection )
+        {
+            targetConnections.Add( targetConnection );
+            
+            targetConnection.SourcePlug = this;
+        }
+
+        /// <summary>
+        /// Updates the value of the (input or output) plug.
+        /// </summary>
+        public bool UpdatePlugValue()
+        {
+            if (sourceConnection != null)
+            {
+                if (value != sourceConnection.SourcePlug.Value)
+                {
+                    value = sourceConnection.SourcePlug.Value;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        #endregion // Public instance methods
     }
 }
 
@@ -1080,6 +1997,9 @@ namespace GateNetworkDotNet.GateTypes
         #endregion // Public instance methods
     }
 
+    /// <summary>
+    /// The phase of construction of a type of a basic gate.
+    /// </summary>
     enum BasicGateTypeConstructionPhase
     {
         BEGINNING,
@@ -1110,12 +2030,12 @@ namespace GateNetworkDotNet.GateTypes
         /// <summary>
         /// The nested gates.
         /// </summary>
-        private Dictionary<string, GateType> nestedGateTypes;
+        private Dictionary< string, GateType > nestedGateTypes;
 
         /// <summary>
         /// The connections.
         /// </summary>
-        private Dictionary<string, string> connections;
+        private Dictionary< string, string > connections;
 
         /// <summary>
         /// The phase of construction.
@@ -1163,7 +2083,7 @@ namespace GateNetworkDotNet.GateTypes
         /// <value>
         /// The connections.
         /// </value>
-        public Dictionary<string, string> Connections
+        public Dictionary< string, string > Connections
         {
             get
             {
@@ -1226,7 +2146,7 @@ namespace GateNetworkDotNet.GateTypes
         /// 
         /// <param name="line">The line (from the configuration file).</param>
         /// <param name="gateTypes">The (already defined) types of gates.</param>
-        public override void Configure(string line, Dictionary<string, GateType> gateTypes)
+        public override void Configure( string line, Dictionary< string, GateType > gateTypes )
         {
             string keyword = ParseKeyword( line );
 
@@ -1318,7 +2238,7 @@ namespace GateNetworkDotNet.GateTypes
         /// <exception cref="System.Exception">
         /// Condition: The method is called in the wrong phase of construction.
         /// </exception>
-        protected override void SetName(string name)
+        protected override void SetName( string name )
         {
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.NAME)
@@ -1439,7 +2359,7 @@ namespace GateNetworkDotNet.GateTypes
                 throw new Exception( "Syntax error (" + nestedGateName + ")." );
             }
             // Validate the uniqueness of the name of the nested gate.
-            if (nestedGateTypes.ContainsKey(nestedGateName))
+            if (nestedGateTypes.ContainsKey( nestedGateName ))
             {
                 throw new Exception( "Duplicate (" + nestedGateName + ")." );
             }
@@ -1492,7 +2412,7 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the connection.
             if (connection == null)
             {
-                throw new ArgumentNullException("connection");
+                throw new ArgumentNullException( "connection" );
             }
             if (connection.Length != 2)
             {
@@ -1549,7 +2469,7 @@ namespace GateNetworkDotNet.GateTypes
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.CONNECTIONS)
             {
-                throw new Exception("Missing keyword.");
+                throw new Exception( "Missing keyword." );
             }
 
             // Validate the connections.
@@ -1576,6 +2496,9 @@ namespace GateNetworkDotNet.GateTypes
         #endregion // Public instance methods
     }
 
+    /// <summary>
+    /// The phase of construction of a type of a composite gate.
+    /// </summary>
     enum CompositeGateTypeConstructionPhase
     {
         BEGINNING,
@@ -1637,913 +2560,6 @@ namespace GateNetworkDotNet.GateTypes
                     throw new Exception( "Binding rule broken" );
                 }
             }
-        }
-
-        #endregion // Public instance methods
-    }
-}
-
-namespace GateNetworkDotNet.Gates
-{
-    /// <summary>
-    /// A plug.
-    /// </summary>
-    public class Plug
-    {
-        #region Private insatance fields
-
-        /// <summary>
-        /// The value of the plug.
-        /// </summary>
-        private string value;
-
-        /// <summary>
-        /// The input connection plugged into the plug.
-        /// </summary>
-        private Connection sourceConnection;
-
-        /// <summary>
-        /// The output connections plugged into the plug.
-        /// </summary>
-        private List< Connection > targetConnections;
-
-        /// <summary>
-        /// The parent gate of the plug.
-        /// </summary>
-        private Gate parentGate;
-
-        #endregion // Private instance fields
-
-        #region Public instance properties
-
-        /// <summary>
-        /// Gets or sets the value of the plug.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The value of the plug.
-        /// </value>
-        public string Value
-        {
-            get
-            {
-                return value;
-            }
-            set
-            {
-                if (!IsLegalPlugValue( value ))
-                {
-                    throw new Exception("Syntax error.");
-                }
-                this.value = value;
-            }
-        }
-
-        #endregion // Public instance properties
-
-        #region Public instance constructors
-        
-        /// <summary>
-        /// Creates a new plug.
-        /// </summary>
-        /// 
-        /// <exception cref="System.ArgumentNullException">
-        /// Condition: <c>parentGate</c> is <c>null</c>.
-        /// </exception>
-        public Plug( Gate parentGate )
-        {
-            value = "?";
-
-            sourceConnection = null;
-            targetConnections = new List< Connection >();
-
-            if (parentGate == null)
-            {
-                throw new ArgumentNullException();
-            }
-            this.parentGate = parentGate;
-        }
-
-        #endregion // Public instance constructors
-
-        #region Public instance methods
-
-        /// <summary>
-        /// Plugs a source connection into the plug.
-        /// </summary>
-        /// 
-        /// <param name="sourceConnection">The source connection.</param>
-        public void PlugSourceConnection( Connection sourceConnection )
-        {
-            if (this.sourceConnection != null)
-            {
-                // TODO: Provide more specific exception.
-                throw new Exception();
-            }
-            this.sourceConnection = sourceConnection;
-            
-            sourceConnection.TargetPlug = this;
-        }
-
-        /// <summary>
-        /// Plugs a target connecion into the plug.
-        /// </summary>
-        /// 
-        /// <param name="targetConnection">The target connection.</param>
-        public void PlugTargetConnection( Connection targetConnection )
-        {
-            targetConnections.Add( targetConnection );
-            
-            targetConnection.SourcePlug = this;
-        }
-
-        /// <summary>
-        /// Updates the value of the (input or output) plug.
-        /// </summary>
-        public bool UpdatePlugValue()
-        {
-            if (sourceConnection != null)
-            {
-                if (value != sourceConnection.SourcePlug.Value)
-                {
-                    value = sourceConnection.SourcePlug.Value;
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        #endregion // Public instance methods
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="plugValue"></param>
-        /// <returns></returns>
-        public static bool IsLegalPlugValue( string plugValue )
-        {
-            return (plugValue.Equals("0") || plugValue.Equals("1") || plugValue.Equals("?"));
-        }
-    }
-    
-    /// <summary>
-    /// A connection.
-    /// </summary>
-    public class Connection
-    {
-        #region Private instance fields
-
-        /// <summary>
-        /// The source plug.
-        /// </summary>
-        private Plug sourcePlug;
-
-        /// <summary>
-        /// The target plug.
-        /// </summary>
-        private Plug targetPlug;
-
-        #endregion // Private instance fields
-
-        #region Public instance properties
-
-        /// <summary>
-        /// Gets or sets the source plug.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The source plug.
-        /// </value>
-        public Plug SourcePlug
-        {
-            get
-            {
-                return sourcePlug;
-            }
-            set
-            {
-                sourcePlug = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the target plug.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The target plug.
-        /// </value>
-        public Plug TargetPlug
-        {
-            get
-            {
-                return targetPlug;
-            }
-            set
-            {
-                targetPlug = value;
-            }
-        }
-
-        #endregion // Public instance properties
-    }
-    
-    /// <summary>
-    /// An abstract gate.
-    /// </summary>
-    public abstract class Gate
-    {
-        #region Private instance fields
-
-        /// <summary>
-        /// The name of the (abstract) gate.
-        /// </summary>
-        private string name;
-
-        /// <summary>
-        /// The type of the (abstract) gate.
-        /// </summary>
-        private GateType type;
-
-        /// <summary>
-        /// The input plugs.
-        /// </summary>
-        private Plug[] inputPlugs;
-
-        /// <summary>
-        /// The output plugs.
-        /// </summary>
-        private Plug[] outputPlugs;
-
-        #endregion // Private instance fields
-
-        #region Public instance properties
-
-        /// <summary>
-        /// Gets the name of the gate.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The name of the gate type.
-        /// </value>
-        public string Name
-        {
-            get
-            {
-                return name;
-            }
-        }
-
-        /// <summary>
-        /// Gets the input plugs.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The input plugs.
-        /// </value>
-        public Plug[] InputPlugs
-        {
-            get
-            {
-                return inputPlugs;
-            }
-        }
-
-        /// <summary>
-        /// Gets the number of the input plugs.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The number of the input plugs.
-        /// </value>
-        public int InputPlugCount
-        {
-            get
-            {
-                return type.InputPlugCount;
-            }
-        }
-
-        /// <summary>
-        /// Gets the output plugs.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The output plugs.
-        /// </value>
-        public Plug[] OutputPlugs
-        {
-            get
-            {
-                return outputPlugs;
-            }
-        }
-
-        /// <summary>
-        /// Gets the number of the output plugs.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The number of the output plugs.
-        /// </value>
-        public int OutputPlugCount
-        {
-            get
-            {
-                return type.OutputPlugCount;
-            }
-        }
-
-        #endregion // Public instance properties
-
-        #region Protected instance constructors
-
-        /// <summary>
-        /// Creates a new gate.
-        /// </summary>
-        /// 
-        /// <param name="name">The name of the gate.</param>
-        /// <param name="type">The type of the gate.</param>
-        /// 
-        /// <exception cref="System.ArgumentNullException">
-        /// Condition 1: <c>name</c> is <c>null</c>.
-        /// Condition 2: <c>type</c> is <c>null</c>.
-        /// </exception>
-        protected Gate( string name, GateType type )
-        {
-            // Validate the name.
-            if (!Program.IsLegalName( name ))
-            {
-                throw new ArgumentException( name );
-            }
-            this.name = name;
-
-            // Validate the (abstract) gate type.
-            if (type == null)
-            {
-                throw new ArgumentNullException();
-            }
-            this.type = type;
-
-            // Create the input plugs.
-            inputPlugs = new Plug[ InputPlugCount ];
-            for (int i = 0; i < InputPlugCount; i++)
-            {
-                inputPlugs[ i ] = new Plug( this );
-            }
-
-            // Create the output plugs.
-            outputPlugs = new Plug[ OutputPlugCount ];
-            for (int i = 0; i < OutputPlugCount; i++)
-            {
-                outputPlugs[ i ] = new Plug( this );
-            }
-        }
-
-        #endregion // Protected instance constructors
-
-        #region Public instance methods
-
-        /// <summary>
-        /// Gets an input plug specified by its name.
-        /// </summary>
-        /// 
-        /// <param name="inputPlugName">The name of the input plug.</param>
-        /// 
-        /// <returns>
-        /// The input plug (or <c>null</c> if such input plug does not exist).
-        /// </returns>
-        public Plug GetInputPlugByName( string inputPlugName )
-        {
-            int inputPlugIndex = type.GetInputPlugIndex( inputPlugName );
-            return (inputPlugIndex != -1) ? InputPlugs[ inputPlugIndex ] : null;
-        }
-
-        /// <summary>
-        /// Gets an output plug specified by its name.
-        /// </summary>
-        /// 
-        /// <param name="outputPlugName">The name of the output plug.</param>
-        /// 
-        /// <returns>
-        /// The output plug (or <c>null</c> if such output plug does not exist).
-        /// </returns>
-        public Plug GetOutputPlugByName( string outputPlugName )
-        {
-            int outputPlugIndex = type.GetOutputPlugIndex( outputPlugName );
-            return (outputPlugIndex != -1) ? OutputPlugs[ outputPlugIndex ] : null;
-        }
-
-        /// <summary>
-        /// Gets the values of the input plugs.
-        /// </summary>
-        /// 
-        /// <returns>
-        /// The values of the input plugs.
-        /// </returns>
-        public string GetInputPlugValues()
-        {
-            // Build the string representation of the values of the input plugs.
-            StringBuilder inputPlugValuesSB = new StringBuilder();
-            for (int i = 0; i < InputPlugCount; i++)
-            {
-                inputPlugValuesSB.Append(InputPlugs[i].Value + " ");
-            }
-            // Remove the trailing space character if necessary.
-            if (inputPlugValuesSB.Length != 0)
-            {
-                inputPlugValuesSB.Remove(inputPlugValuesSB.Length - 1, 1);
-            }
-            return inputPlugValuesSB.ToString();
-        }
-
-        /// <summary>
-        /// Sets the values of the input plugs.
-        /// </summary>
-        /// 
-        /// <param name="inputPlugValuesString">The values of the input plugs.</param>
-        public abstract void SetInputPlugValues(string inputPlugValuesString);
-
-        /// <summary>
-        /// Gets the values of the output plugs.
-        /// </summary>
-        /// 
-        /// <returns>
-        /// The values of the output plugs.
-        /// </returns>
-        public string GetOutputPlugValues()
-        {
-            // Build the string representation of the values of the output plugs.
-            StringBuilder outputPlugValuesSB = new StringBuilder();
-            for (int i = 0; i < OutputPlugCount; i++)
-            {
-                outputPlugValuesSB.Append( OutputPlugs[ i ].Value + " " );
-            }
-            // Remove the trailing space character if necessary.
-            if (outputPlugValuesSB.Length != 0)
-            {
-                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
-            }
-            return outputPlugValuesSB.ToString();
-        }
-
-        /// <summary>
-        /// Sets the values of the output plugs.
-        /// </summary>
-        /// 
-        /// <param name="outputPlugValues">The values of the output plugs.</param>
-        public void SetOutputPlugValues(string outputPlugValuesString)
-        {
-            string[] outputPlugValues = outputPlugValuesString.Split(' ');
-            for (int i = 0; i < OutputPlugCount; i++)
-            {
-                OutputPlugs[i].Value = outputPlugValues[i];
-            }
-        }
-
-        /// <summary>
-        /// Initializes the (abstract) gate.
-        /// </summary>
-        public abstract void Initialize();
-
-        /// <summary>
-        /// Updates the values of the input plugs of the (abstract) gate.
-        /// </summary>
-        public abstract bool UpdateInputPlugValues();
-
-        /// <summary>
-        /// Evaluates the (abstract) gate.
-        /// </summary>
-        public abstract void UpdateOutputPlugValues();
-
-        #endregion // Public instance methods
-    }
-    
-    /// <summary>
-    /// A basic gate.
-    /// </summary>
-    public class BasicGate
-        : Gate
-    {
-        #region Private instance fields
-
-        /// <summary>
-        /// The type of the basic gate.
-        /// </summary>
-        private BasicGateType type;
-        
-        #endregion // Private instance fields
-
-        #region Public instance properties
-
-        #endregion // Public instance properties
-
-        #region Public instance contructors
-
-        /// <summary>
-        /// Creates a new basic gate.
-        /// </summary>
-        /// 
-        /// <param name="name">The name of the basic gate.</param>
-        /// <param name="type">The type of the basic gate.</param>
-        /// 
-        /// <exception cref="GateNetworkDotNet.Exceptions.IllegalNameException">
-        /// Condition: <c>name</c> is not a legal basic gate name.
-        /// </exception>
-        /// <exception cref="System.ArgumentNullException">
-        /// Condition: <c>type</c> is <c>null</c>.
-        /// </exception>
-        public BasicGate( string name, BasicGateType type )
-            : base( name, type )
-        {
-            // Validate the basic gate type.
-            if (type == null)
-            {
-                throw new ArgumentNullException( "type" );
-            }
-            this.type = type;
-        }
-
-        #endregion // Public instance constructors
-
-        #region Public instance methods
-
-        /// <summary>
-        /// Sets the values of the input plugs.
-        /// </summary>
-        /// 
-        /// <param name="inputPlugValuesString">The values of the input plugs.</param>
-        public override void SetInputPlugValues( string inputPlugValuesString )
-        {
-            string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
-            if (inputPlugValues.Length != InputPlugCount)
-            {
-                throw new Exception( "Syntax error." );
-            }
-
-            for (int i = 0; i < InputPlugCount; i++)
-            {
-                InputPlugs[ i ].Value = inputPlugValues[ i ];
-            }
-        }
-
-        /// <summary>
-        /// Initializes the basic gate.
-        /// </summary>
-        public override void Initialize()
-        {
-            if (InputPlugCount == 0)
-            {
-                // If the gate has no input plugs, it is initialized using the transition function.
-                UpdateOutputPlugValues();
-            }
-            else
-            {
-                // If the basic gate has at least one input plug, it is initialized using the "?" values.
-                StringBuilder outputPlugValuesSB = new StringBuilder();
-                for (int i = 0; i < OutputPlugCount; i++)
-                {
-                    outputPlugValuesSB.Append("?" + " ");
-                }
-                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
-                string outputPlugValues = outputPlugValuesSB.ToString();
-
-                SetOutputPlugValues( outputPlugValues );
-            }
-        }
-
-        /// <summary>
-        /// Updates the values of the input plugs of the basic gate.
-        /// </summary>
-        public override bool UpdateInputPlugValues()
-        {
-            bool updatePerformed = false;
-
-            foreach (Plug inputPlug in InputPlugs)
-            {
-                updatePerformed = inputPlug.UpdatePlugValue() || updatePerformed;
-            }
-
-            return updatePerformed;
-        }
-
-        /// <summary>
-        /// Evaluates the basic gate.
-        /// </summary>
-        public override void UpdateOutputPlugValues()
-        {
-            string inputPlugValues = GetInputPlugValues();
-
-            string outputPlugValues = type.Evaluate(inputPlugValues);
-
-            SetOutputPlugValues(outputPlugValues);
-        }
-
-        #endregion // Public instance methods
-    }
-    
-    /// <summary>
-    /// A composite gate.
-    /// </summary>
-    public class CompositeGate
-        : Gate
-    {
-        #region Private instance fields
-
-        /// <summary>
-        /// The type of the composite gate.
-        /// </summary>
-        private CompositeGateType type;
-
-        /// <summary>
-        /// The nested gates.
-        /// </summary>
-        private Dictionary< string, Gate > nestedGates;
-
-        /// <summary>
-        /// The connections;
-        /// </summary>
-        private Connection[] connections; 
-
-        #endregion // Private instance fields
-
-        #region Public instance properties
-
-        /// <summary>
-        /// Gets the nested gates.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The nested gates.
-        /// </value>
-        public Dictionary< string, Gate > NestedGates
-        {
-            get
-            {
-                return nestedGates;
-            }
-        }
-
-        /// <summary>
-        /// Gets the number of the nested gates.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The number of the nested gates.
-        /// </value>
-        public int NestedGateCount
-        {
-            get
-            {
-                return type.NestedGateCount;
-            }
-        }
-
-        /// <summary>
-        /// Gets the connections
-        /// </summary>
-        /// 
-        /// <value>
-        /// The connections.
-        /// </value>
-        public Connection[] Connections
-        {
-            get
-            {
-                return connections;
-            }
-        }
-
-        /// <summary>
-        /// Gets the number of connections.
-        /// </summary>
-        /// 
-        /// <value>
-        /// The number of connections.
-        /// </value>
-        public int ConnectionCount
-        {
-            get
-            {
-                return type.ConnectionCount;
-            }
-        }
-
-        #endregion // Public instance properties
-
-        #region Public instance contructors
-
-        /// <summary>
-        /// Creates a new composite gate.
-        /// </summary>
-        /// 
-        /// <param name="name">The name of the composite gate.</param>
-        /// <param name="type">The type of the composite gate.</param>
-        /// 
-        /// <exception cref="Network.Exceptions.IllegalNameException">
-        /// Condition: <c>name</c> is not a legal composite gate name.
-        /// </exception>
-        /// <exception cref="System.ArgumentNullException">
-        /// Condition: <c>type</c> is <c>null</c>.
-        /// </exception>
-        public CompositeGate( string name, CompositeGateType type )
-            : base( name, type )
-        {
-            // Validate the composite gate type.
-            if (type == null)
-            {
-                throw new ArgumentNullException();
-            }
-            this.type = type;
-
-            //
-            // Construct the nested gates.
-            //
-            nestedGates = new Dictionary< string, Gate >();
-            foreach (KeyValuePair< string, GateType > kvp in type.NestedGateTypes)
-            {
-                string nestedGateName = kvp.Key;
-                GateType nestedGateType = kvp.Value;
-                Gate nestedGate = nestedGateType.Instantiate( nestedGateName );
-
-                nestedGates.Add( nestedGateName, nestedGate ); 
-            }
-
-            //
-            // Construct the connections.
-            //
-            connections = new Connection[ ConnectionCount ];
-            int connectionIndex = 0;
-            foreach (KeyValuePair< string, string > kvp in type.Connections)
-            {
-                //
-                // Get the target plug.
-                //
-                string connectionTarget = kvp.Key;
-                string[] targetPlugName = connectionTarget.Split( '.' );
-                bool nestedTargetPlug = (targetPlugName.Length != 1);
-                
-                // Depending on whether the target plug is a nested plug, the target gate is ...
-                Gate targetGate = nestedTargetPlug ?
-                    // ... a nested gate.
-                    nestedGates[ targetPlugName[ 0 ] ] :
-                    // ... this composite gate.
-                    this;
-                
-                // Depending on whether the target plug is a nested plug, the target plug is ...
-                Plug targetPlug = nestedTargetPlug ?
-                    // ... an input plug of a nested gate.
-                    targetGate.GetInputPlugByName( targetPlugName[ 1 ] ) :
-                    // ... an output plug of this composite gate.
-                    targetGate.GetOutputPlugByName( targetPlugName[ 0 ] );
-                    
-                //
-                // Get the source plug.
-                //
-                string connectionSource = kvp.Value;
-                string[] sourcePlugName = connectionSource.Split( '.' );
-                bool nestedSourcePlug = (sourcePlugName.Length != 1);
-
-                // Depending on whether the source plug is a nested plug, the source gate is ...
-                Gate sourceGate = nestedSourcePlug ?
-                    // ... a nested gate.
-                    nestedGates[ sourcePlugName[ 0 ] ] :
-                    // ... this composite gate.
-                    this;
-
-                // Depending on whether the source plug is a nested plug, the source plug is ...
-                Plug sourcePlug = nestedSourcePlug ?
-                    // ... an output plug of a nested gate.
-                    sourceGate.GetOutputPlugByName( sourcePlugName[ 1 ] ) :
-                    // ... an input plug of this composite gate.
-                    sourceGate.GetInputPlugByName( sourcePlugName[ 0 ] );
-
-                // Construct the connection.
-                Connection connection = new Connection();
-                sourcePlug.PlugTargetConnection( connection );
-                targetPlug.PlugSourceConnection( connection );
-
-                connections[ connectionIndex++ ] = connection;
-            }
-
-            //
-            //
-            //
-            GetInputPlugByName( "0" ).Value = "0";
-            GetInputPlugByName( "1" ).Value = "1";
-        }
-
-        #endregion // Public instance constructors
-
-        #region Public instance methods
-
-        /// <summary>
-        /// Sets the values of the input plugs.
-        /// </summary>
-        /// 
-        /// <param name="inputPlugValuesString">The values of the input plugs.</param>
-        public override void SetInputPlugValues( string inputPlugValuesString )
-        {
-            string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
-            if (inputPlugValues.Length != InputPlugCount - 2)
-            {
-                throw new Exception( "Syntax error." );
-            }
-
-            for (int i = 0; i < InputPlugCount - 2; i++)
-            {
-                InputPlugs[ i ].Value = inputPlugValues[ i ];
-            }
-        }
-
-        /// <summary>
-        /// Initializes the composite gate.
-        /// </summary>
-        public override void Initialize()
-        {
-            foreach (KeyValuePair<string, Gate> kvp in nestedGates)
-            {
-                Gate nestedGate = kvp.Value;
-                nestedGate.Initialize();
-            }
-        }
-
-        /// <summary>
-        /// Updates the values of the input plugs of the composite gate.
-        /// </summary>
-        public override bool UpdateInputPlugValues()
-        {
-            foreach (Plug inputPlug in InputPlugs)
-            {
-                inputPlug.UpdatePlugValue();
-            }
-
-            bool updatePerformed = false;
-
-            foreach (KeyValuePair< string, Gate > kvp in nestedGates)
-            {
-                Gate nestedGate = kvp.Value;
-                updatePerformed = nestedGate.UpdateInputPlugValues() || updatePerformed;
-            }
-
-            return updatePerformed;
-        }
-
-        /// <summary>
-        /// Evaluates the composite gate.
-        /// </summary>
-        public override void UpdateOutputPlugValues()
-        {
-            foreach (KeyValuePair<string, Gate> kvp in nestedGates)
-            {
-                Gate nestedGate = kvp.Value;
-                nestedGate.UpdateOutputPlugValues();
-            }
-            foreach (Plug outputPlug in OutputPlugs)
-            {
-                outputPlug.UpdatePlugValue();
-            }
-        }
-
-        /// <summary>
-        /// Evaluates the (abstract) gate.
-        /// </summary>
-        /// 
-        /// <param name="inputPlugValues">The values of the input plugs.</param>
-        /// 
-        /// <returns>
-        /// The computation time (in cycles) and the values of the output plugs.
-        /// </returns>
-        public string Evaluate(string inputPlugValues)
-        {
-            SetInputPlugValues(inputPlugValues);
-            bool updatePerformed = true;
-
-            int cycles = 0;
-            while (cycles < 1000000)
-            {
-                // Update the values of the input plugs.
-                updatePerformed = UpdateInputPlugValues();
-
-                if (!updatePerformed)
-                {
-                    break;
-                }
-
-                // Update the values of the output plugs.
-                UpdateOutputPlugValues();
-
-                cycles++;
-            }
-
-            return cycles + " " + GetOutputPlugValues();
         }
 
         #endregion // Public instance methods
