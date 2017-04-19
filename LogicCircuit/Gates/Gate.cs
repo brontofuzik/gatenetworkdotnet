@@ -85,16 +85,16 @@ namespace LogicCircuit.Gates
             }
         }
 
-        public Plug GetInputPlugByName( string inputPlugName )
+        public Plug GetInputPlugByName(string inputPlugName)
         {
-            int inputPlugIndex = type.GetInputPlugIndex( inputPlugName );
-            return (inputPlugIndex != -1) ? InputPlugs[ inputPlugIndex ] : null;
+            int inputPlugIndex = type.GetInputPlugIndex(inputPlugName);
+            return (inputPlugIndex != -1) ? InputPlugs[inputPlugIndex] : null;
         }
 
-        public Plug GetOutputPlugByName( string outputPlugName )
+        public Plug GetOutputPlugByName(string outputPlugName)
         {
-            int outputPlugIndex = type.GetOutputPlugIndex( outputPlugName );
-            return (outputPlugIndex != -1) ? OutputPlugs[ outputPlugIndex ] : null;
+            int outputPlugIndex = type.GetOutputPlugIndex(outputPlugName);
+            return (outputPlugIndex != -1) ? OutputPlugs[outputPlugIndex] : null;
         }
 
         public string GetInputPlugValues()
@@ -121,12 +121,12 @@ namespace LogicCircuit.Gates
             StringBuilder outputPlugValuesSB = new StringBuilder();
             for (int i = 0; i < OutputPlugCount; i++)
             {
-                outputPlugValuesSB.Append( OutputPlugs[ i ].Value + " " );
+                outputPlugValuesSB.Append(OutputPlugs[i].Value + " ");
             }
             // Remove the trailing space character if necessary.
             if (outputPlugValuesSB.Length != 0)
             {
-                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+                outputPlugValuesSB.Remove(outputPlugValuesSB.Length - 1, 1);
             }
             return outputPlugValuesSB.ToString();
         }

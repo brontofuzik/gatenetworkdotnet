@@ -8,27 +8,27 @@ namespace LogicCircuit.Gates
     {
         private BasicGateType type;
 
-        public BasicGate( string name, BasicGateType type )
-            : base( name, type )
+        public BasicGate(string name, BasicGateType type)
+            : base(name, type)
         {
             if (type == null)
             {
-                throw new ArgumentNullException( "type" );
+                throw new ArgumentNullException("type");
             }
             this.type = type;
         }
 
-        public override void SetInputPlugValues( string inputPlugValuesString )
+        public override void SetInputPlugValues(string inputPlugValuesString)
         {
-            string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
+            string[] inputPlugValues = inputPlugValuesString.Split(' ');
             if (inputPlugValues.Length != InputPlugCount)
             {
-                throw new Exception( "Syntax error." );
+                throw new Exception("Syntax error.");
             }
 
             for (int i = 0; i < InputPlugCount; i++)
             {
-                InputPlugs[ i ].Value = inputPlugValues[ i ];
+                InputPlugs[i].Value = inputPlugValues[i];
             }
         }
 
@@ -47,10 +47,10 @@ namespace LogicCircuit.Gates
                 {
                     outputPlugValuesSB.Append("?" + " ");
                 }
-                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+                outputPlugValuesSB.Remove(outputPlugValuesSB.Length - 1, 1);
                 string outputPlugValues = outputPlugValuesSB.ToString();
 
-                SetOutputPlugValues( outputPlugValues );
+                SetOutputPlugValues(outputPlugValues);
             }
         }
 

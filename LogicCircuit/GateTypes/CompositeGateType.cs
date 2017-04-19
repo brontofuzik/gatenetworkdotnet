@@ -64,55 +64,55 @@ namespace LogicCircuit.GateTypes
 
         public override void Configure(string line, Dictionary<string, GateType> gateTypes)
         {
-            string keyword = ParseKeyword( line );
+            string keyword = ParseKeyword(line);
 
-            if (keyword.Equals( "inputs" ) || keyword.Equals( "outputs" ) || keyword.Equals( "end" ))
+            if (keyword.Equals("inputs") || keyword.Equals("outputs") || keyword.Equals("end"))
             {
-                base.Configure( line, gateTypes );
+                base.Configure(line, gateTypes);
             }
-            else if (keyword.Equals( "gate" ))
+            else if (keyword.Equals("gate"))
             {
                 // Set the nested gates.
-                string[] nestedGate = ParseNestedGate( line );
-                AddNestedGate( nestedGate, gateTypes );
+                string[] nestedGate = ParseNestedGate(line);
+                AddNestedGate(nestedGate, gateTypes);
             }
             else
             {
                 // Set the connections.
-                string[] connection = ParseConnection( line );
-                AddConnection( connection );
+                string[] connection = ParseConnection(line);
+                AddConnection(connection);
             }
         }
 
-        public string[] ParseNestedGate( string line )
+        public string[] ParseNestedGate(string line)
         {
             // Split the line into words.
-            string[] words = line.Split( ' ' );
+            string[] words = line.Split(' ');
 
             // Validate the number of words (3).
             if (words.Length != 3)
             {
-                throw new Exception( "Syntax error." );
+                throw new Exception("Syntax error.");
             }
 
             // Return only the second and the third word.
-            string[] nestedGate = new string[ 2 ];
+            string[] nestedGate = new string[2];
             for (int i = 0; i < 2; i++)
             {
-                nestedGate[ i ] = words[ i + 1 ];
+                nestedGate[i] = words[i + 1];
             }
             return nestedGate;
         }
 
-        public string[] ParseConnection( string line )
+        public string[] ParseConnection(string line)
         {
             // Split the line into words.
-            string[] words = Regex.Split( line, "->" );
+            string[] words = Regex.Split(line, "->");
 
             // Validate the number of words (2).
             if (words.Length != 2)
             {
-                throw new Exception( "Syntax error." );
+                throw new Exception("Syntax error.");
             }
 
             // Return all the words.
@@ -124,121 +124,121 @@ namespace LogicCircuit.GateTypes
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.NAME)
             {
-                throw new Exception( "Missing keyword." );
+                throw new Exception("Missing keyword.");
             }
 
-            base.SetName( name );
+            base.SetName(name);
 
             // Advance the phase of construction.
             constructionPhase = CompositeGateTypeConstructionPhase.INPUT_PLUG_NAMES;
         }
 
-        public override void SetInputPlugNames( string[] inputPlugNames )
+        public override void SetInputPlugNames(string[] inputPlugNames)
         {
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.INPUT_PLUG_NAMES)
             {
-                throw new Exception( "Missing keyword." );
+                throw new Exception("Missing keyword.");
             }
 
-            string[] extendedInputPlugNames = new string[ inputPlugNames.Length + implicitInputPlugNames.Length ];
+            string[] extendedInputPlugNames = new string[inputPlugNames.Length + implicitInputPlugNames.Length];
             for (int i = 0; i < inputPlugNames.Length; i++)
             {
-                extendedInputPlugNames[ i ] = inputPlugNames[ i ];
+                extendedInputPlugNames[i] = inputPlugNames[i];
             }
             for (int i = 0; i < implicitInputPlugNames.Length; i++)
             {
-                extendedInputPlugNames[ inputPlugNames.Length + i ] = implicitInputPlugNames[ i ];
+                extendedInputPlugNames[inputPlugNames.Length + i] = implicitInputPlugNames[i];
             }
-            base.SetInputPlugNames( extendedInputPlugNames );
+            base.SetInputPlugNames(extendedInputPlugNames);
 
             // Advance the phase of construction.
             constructionPhase = CompositeGateTypeConstructionPhase.OUTPUT_PLUG_NAMES;
         }
 
-        public override void SetOutputPlugNames( string[] outputPlugNames )
+        public override void SetOutputPlugNames(string[] outputPlugNames)
         {
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.OUTPUT_PLUG_NAMES)
             {
-                throw new Exception( "Missing keyword." );
+                throw new Exception("Missing keyword.");
             }
 
-            base.SetOutputPlugNames( outputPlugNames );
+            base.SetOutputPlugNames(outputPlugNames);
 
             // Advance the phase of construction.
             constructionPhase = CompositeGateTypeConstructionPhase.NESTED_GATES;
         }
    
-        public void AddNestedGate( string[] nestedGate, Dictionary< string, GateType > gateTypes )
+        public void AddNestedGate(string[] nestedGate, Dictionary< string, GateType > gateTypes)
         {
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.NESTED_GATES && constructionPhase != CompositeGateTypeConstructionPhase.CONNECTIONS)
             {
-                throw new Exception( "Missing keyword." );
+                throw new Exception("Missing keyword.");
             }
 
             // Validate the nested gate.
             if (nestedGate == null)
             {
-                throw new ArgumentNullException( "nestedGate" );
+                throw new ArgumentNullException("nestedGate");
             }
             if (nestedGate.Length != 2)
             {
-                throw new Exception( "Syntax error (" + nestedGate + ")." );
+                throw new Exception("Syntax error (" + nestedGate + ").");
             }
 
             // Validate the types of gates.
             if (gateTypes == null)
             {
-                throw new ArgumentNullException( "gateTypes" );
+                throw new ArgumentNullException("gateTypes");
             }
 
             //
             // Validate the name of the nested gate.
             //
-            string nestedGateName = nestedGate[ 0 ];
+            string nestedGateName = nestedGate[0];
 
             // Validate the legality of the name of the nested gate.
-            if (!Program.IsLegalName( nestedGateName ))
+            if (!Program.IsLegalName(nestedGateName))
             {
-                throw new Exception( "Syntax error (" + nestedGateName + ")." );
+                throw new Exception("Syntax error (" + nestedGateName + ").");
             }
             // Validate the uniqueness of the name of the nested gate.
             if (nestedGateTypes.ContainsKey(nestedGateName))
             {
-                throw new Exception( "Duplicate (" + nestedGateName + ")." );
+                throw new Exception("Duplicate (" + nestedGateName + ").");
             }
 
             //
             // Validate the type of the nested gate.
             //
-            string nestedGateTypeString = nestedGate[ 1 ];
+            string nestedGateTypeString = nestedGate[1];
 
             // Retrieve the type of the nested gate.
             GateType nestedGateType;
             try
             {
-                nestedGateType = gateTypes[ nestedGateTypeString ];
+                nestedGateType = gateTypes[nestedGateTypeString];
             }
             catch (KeyNotFoundException)
             {
-                throw new Exception( "Syntax error (" + nestedGateTypeString + ")." );
+                throw new Exception("Syntax error (" + nestedGateTypeString + ").");
             }
 
             // Store the nested gate.
-            nestedGateTypes.Add( nestedGateName, nestedGateType );
+            nestedGateTypes.Add(nestedGateName, nestedGateType);
 
             // Advance the phase of construction.
             constructionPhase = CompositeGateTypeConstructionPhase.CONNECTIONS;
         }
 
-        public void AddConnection( string[] connection )
+        public void AddConnection(string[] connection)
         {
             // Validate the phase of construction.
             if (constructionPhase != CompositeGateTypeConstructionPhase.CONNECTIONS)
             {
-                throw new Exception( "Missing keyword." );
+                throw new Exception("Missing keyword.");
             }
 
             // Validate the connection.
@@ -248,35 +248,35 @@ namespace LogicCircuit.GateTypes
             }
             if (connection.Length != 2)
             {
-                throw new Exception( "Syntax error (" + connection + ")." );
+                throw new Exception("Syntax error (" + connection + ").");
             }
             
             //
             // Validate the endpoint of the connection.
             //
-            string connectionTo = connection[ 0 ];
+            string connectionTo = connection[0];
 
-            if (connections.ContainsKey( connectionTo ))
+            if (connections.ContainsKey(connectionTo))
             {
-                throw new Exception( "Duplicate (" + connection + ")." );
+                throw new Exception("Duplicate (" + connection + ").");
             }
 
             //
             // Validate the startpoint of the connection.
             //
-            string connectionFrom = connection[ 1 ];
+            string connectionFrom = connection[1];
 
             // Store the connection.
-            connections.Add( connectionTo, connectionFrom );
+            connections.Add(connectionTo, connectionFrom);
         }
 
         public virtual void ValidateConnections()
         {
             foreach (string outputPlugName in OutputPlugNames)
             {
-                if (!connections.ContainsKey( outputPlugName ))
+                if (!connections.ContainsKey(outputPlugName))
                 {
-                    throw new Exception( "Binding rule broken" );
+                    throw new Exception("Binding rule broken");
                 }
             }
         }
@@ -296,9 +296,9 @@ namespace LogicCircuit.GateTypes
             constructionPhase = CompositeGateTypeConstructionPhase.END;
         }
 
-        public override Gate Instantiate( string name)
+        public override Gate Instantiate(string name)
         {
-            return new CompositeGate( name, this );
+            return new CompositeGate(name, this);
         }
     }
 

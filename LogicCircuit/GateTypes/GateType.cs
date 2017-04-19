@@ -58,42 +58,42 @@ namespace LogicCircuit.GateTypes
             get;
         }
 
-        public static GateType ParseGateType( string line )
+        public static GateType ParseGateType(string line)
         {
             // Validate the line.
             if (line == null)
             {
-                throw new ArgumentNullException( line );
+                throw new ArgumentNullException(line);
             }
 
             GateType gateType;
 
-            string[] gateTypeClassAndName = line.Split( ' ' );
+            string[] gateTypeClassAndName = line.Split(' ');
             switch (gateTypeClassAndName.Length)
             {
                 case 1:
 
                     // Network construction.
-                    if (gateTypeClassAndName[ 0 ].Equals( "network" ))
+                    if (gateTypeClassAndName[0].Equals("network"))
                     {
                         gateType = new NetworkGateType();
                     }
                     else
                     {
-                        throw new Exception( "Syntax error." );
+                        throw new Exception("Syntax error.");
                     }
-                    gateType.SetName( "networkGateType" );
+                    gateType.SetName("networkGateType");
                     break;
 
                 case 2:
 
                     // Basic or composite gate construction.
-                    if (gateTypeClassAndName[ 0 ].Equals( "gate" ))
+                    if (gateTypeClassAndName[0].Equals("gate"))
                     {
                         // Basic gate construction.
                         gateType = new BasicGateType();
                     }
-                    else if (gateTypeClassAndName[ 0 ].Equals( "composite" ))
+                    else if (gateTypeClassAndName[0].Equals("composite"))
                     {
                         // Composite gate construction.
                         gateType = new CompositeGateType();
@@ -101,131 +101,131 @@ namespace LogicCircuit.GateTypes
                     else
                     {
                         // Syntax error.
-                        throw new Exception( "Syntax error." );
+                        throw new Exception("Syntax error.");
                     }
-                    gateType.SetName( gateTypeClassAndName[ 1 ] );
+                    gateType.SetName(gateTypeClassAndName[1]);
                     break;
 
                 default:
 
                     // Syntax error.
-                    throw new Exception( "Syntax error." );
+                    throw new Exception("Syntax error.");
             }
             return gateType;
         }
 
-        public virtual void Configure( string line, Dictionary< string, GateType > gateTypes )
+        public virtual void Configure(string line, Dictionary< string, GateType > gateTypes)
         {
-            string keyword = ParseKeyword( line );
+            string keyword = ParseKeyword(line);
 
-            if (keyword.Equals( "inputs" ))
+            if (keyword.Equals("inputs"))
             {
                 // Set the names of the input plugs.
-                string[] inputPlugNames = ParsePlugNames( line );
-                SetInputPlugNames( inputPlugNames );
+                string[] inputPlugNames = ParsePlugNames(line);
+                SetInputPlugNames(inputPlugNames);
             }
-            else if (keyword.Equals( "outputs" ))
+            else if (keyword.Equals("outputs"))
             {
                 // Set the names of the output plugs.
-                string[] outputPlugNames = ParsePlugNames( line );
-                SetOutputPlugNames( outputPlugNames );
+                string[] outputPlugNames = ParsePlugNames(line);
+                SetOutputPlugNames(outputPlugNames);
             }
-            else if (keyword.Equals( "end" ))
+            else if (keyword.Equals("end"))
             {
                 // End the construction process.
                 EndConstruction();
             }
             else
             {
-                throw new Exception( "Syntax error." );
+                throw new Exception("Syntax error.");
             }
         }
 
-        protected string ParseKeyword( string line )
+        protected string ParseKeyword(string line)
         {
             // Split the line into words.
-            string[] words = line.Split( ' ' );
+            string[] words = line.Split(' ');
 
             // Return only the first word.
-            return words[ 0 ];
+            return words[0];
         }
 
-        private string[] ParsePlugNames( string line )
+        private string[] ParsePlugNames(string line)
         {
             // Split the line into words.
-            string[] words = line.Split( ' ' );
+            string[] words = line.Split(' ');
 
             // Return all the words except for the first one.
-            string[] plugNames = new string[ words.Length - 1 ];
+            string[] plugNames = new string[words.Length - 1];
             for (int i = 0; i < plugNames.Length; i++)
             {
-                plugNames[ i ] = words[ i + 1 ];
+                plugNames[i] = words[i + 1];
             }
             return plugNames;
         }
 
-        protected virtual void SetName( string name )
+        protected virtual void SetName(string name)
         {
             // Validate the name.
             if (name == null)
             {
-                throw new ArgumentNullException( "name" );
+                throw new ArgumentNullException("name");
             }
-            if (!Program.IsLegalName( name ))
+            if (!Program.IsLegalName(name))
             {
-                throw new Exception( "Syntax error (" + name + ")." );
+                throw new Exception("Syntax error (" + name + ").");
             }
 
             this.name = name;
         }
 
-        public virtual void SetInputPlugNames( string[] inputPlugNames )
+        public virtual void SetInputPlugNames(string[] inputPlugNames)
         {
             // Validate the names of the input plugs.
             if (inputPlugNames == null)
             {
-                throw new ArgumentNullException( "inputPlugNames" );
+                throw new ArgumentNullException("inputPlugNames");
             }
             StringCollection inputPlugNamesCollection = new StringCollection();
             foreach (string inputPlugName in inputPlugNames)
             {
-                if (!Program.IsLegalName( inputPlugName ))
+                if (!Program.IsLegalName(inputPlugName))
                 {
-                    throw new Exception( "Syntax error (" + inputPlugName + ")." );
+                    throw new Exception("Syntax error (" + inputPlugName + ").");
                 }
-                if (inputPlugNamesCollection.Contains( inputPlugName ))
+                if (inputPlugNamesCollection.Contains(inputPlugName))
                 {
-                    throw new Exception( "Duplicate (" + inputPlugName + ")." );
+                    throw new Exception("Duplicate (" + inputPlugName + ").");
                 }
-                inputPlugNamesCollection.Add( inputPlugName );
+                inputPlugNamesCollection.Add(inputPlugName);
             }
 
             this.inputPlugNames = inputPlugNames;
         }
 
-        public virtual void SetOutputPlugNames( string[] outputPlugNames )
+        public virtual void SetOutputPlugNames(string[] outputPlugNames)
         {
             // Validate the names of the output plugs.
             if (outputPlugNames == null)
             {
-                throw new ArgumentNullException( "outputPlugNames" );
+                throw new ArgumentNullException("outputPlugNames");
             }
             if (outputPlugNames.Length == 0)
             {
-                throw new Exception( "Syntax error." );
+                throw new Exception("Syntax error.");
             }
             StringCollection outputPlugNamesCollection = new StringCollection();
             foreach (string outputPlugName in outputPlugNames)
             {
-                if (!Program.IsLegalName( outputPlugName ))
+                if (!Program.IsLegalName(outputPlugName))
                 {
-                    throw new Exception( "Syntax error (" + outputPlugName + ")." );
+                    throw new Exception("Syntax error (" + outputPlugName + ").");
                 }
-                if (outputPlugNamesCollection.Contains( outputPlugName ))
+                if (outputPlugNamesCollection.Contains(outputPlugName))
                 {
-                    throw new Exception( "Duplicate (" + outputPlugName + ")." );
+                    throw new Exception("Duplicate (" + outputPlugName + ").");
                 }
-                outputPlugNamesCollection.Add( outputPlugName );
+                outputPlugNamesCollection.Add(outputPlugName);
             }
 
             this.outputPlugNames = outputPlugNames;
@@ -233,13 +233,13 @@ namespace LogicCircuit.GateTypes
 
         public abstract void EndConstruction();
 
-        public abstract Gate Instantiate( string name );
+        public abstract Gate Instantiate(string name);
 
-        public int GetInputPlugIndex( string inputPlugName )
+        public int GetInputPlugIndex(string inputPlugName)
         {
             for (int i = 0; i < InputPlugCount; i++)
             {
-                if (inputPlugNames[ i ].Equals( inputPlugName ))
+                if (inputPlugNames[i].Equals(inputPlugName))
                 {
                     return i;
                 }
@@ -247,11 +247,11 @@ namespace LogicCircuit.GateTypes
             return -1;
         }
 
-        public int GetOutputPlugIndex( string outputPlugName )
+        public int GetOutputPlugIndex(string outputPlugName)
         {
             for (int i = 0; i < OutputPlugCount; i++)
             {
-                if (outputPlugNames[ i ].Equals( outputPlugName ))
+                if (outputPlugNames[i].Equals(outputPlugName))
                 {
                     return i;
                 }

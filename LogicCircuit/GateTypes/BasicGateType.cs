@@ -49,95 +49,95 @@ namespace LogicCircuit.GateTypes
             }
         }
 
-        public override void Configure( string line, Dictionary< string, GateType > gateTypes )
+        public override void Configure(string line, Dictionary< string, GateType > gateTypes)
         {
-            string keyword = ParseKeyword( line );
+            string keyword = ParseKeyword(line);
 
-            if (keyword.Equals( "inputs" ) || keyword.Equals( "outputs" ) || keyword.Equals( "end" ))
+            if (keyword.Equals("inputs") || keyword.Equals("outputs") || keyword.Equals("end"))
             {
-                base.Configure( line, gateTypes );
+                base.Configure(line, gateTypes);
             }
             else
             {
                 // Set the transitions.
-                string[] transition = ParseTransition( line );
-                AddTransition( transition );
+                string[] transition = ParseTransition(line);
+                AddTransition(transition);
             }
         }
 
-        public string[] ParseTransition( string line)
+        public string[] ParseTransition(string line)
         {
             // Split the line into words.
-            string[] words = line.Split( ' ' );
+            string[] words = line.Split(' ');
             
             // Return all the words.
             return words;
         }
 
-        protected override void SetName( string name )
+        protected override void SetName(string name)
         {
             // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.NAME)
             {
-                throw new Exception( "Missing keyword." );
+                throw new Exception("Missing keyword.");
             }
 
-            base.SetName( name );
+            base.SetName(name);
 
             // Advance the phase of construction.
             constructionPhase = BasicGateTypeConstructionPhase.INPUT_PLUG_NAMES;
         }
 
-        public override void SetInputPlugNames( string[] inputPlugNames )
+        public override void SetInputPlugNames(string[] inputPlugNames)
         {
             // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.INPUT_PLUG_NAMES)
             {
-                throw new Exception( "Missing keyword." );
+                throw new Exception("Missing keyword.");
             }
 
-            base.SetInputPlugNames( inputPlugNames );
+            base.SetInputPlugNames(inputPlugNames);
 
             // Advance the phase of construction.
             constructionPhase = BasicGateTypeConstructionPhase.OUTPUT_PLUG_NAMES;
         }
 
-        public override void SetOutputPlugNames( string[] outputPlugNames )
+        public override void SetOutputPlugNames(string[] outputPlugNames)
         {
             // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.OUTPUT_PLUG_NAMES)
             {
-                throw new Exception( "Missing keyword." );
+                throw new Exception("Missing keyword.");
             }
 
-            base.SetOutputPlugNames( outputPlugNames );
+            base.SetOutputPlugNames(outputPlugNames);
 
             // Advance the phase of construction.
             constructionPhase = BasicGateTypeConstructionPhase.TRANSITIONS;
         }
 
-        public void AddTransition( string[] transition )
+        public void AddTransition(string[] transition)
         {
             // Validate the phase of construciton.
             if (constructionPhase != BasicGateTypeConstructionPhase.TRANSITIONS)
             {
-                throw new Exception( "Missing keyword." );
+                throw new Exception("Missing keyword.");
             }
 
             // Validate the transition.
             if (transition == null)
             {
-                throw new ArgumentNullException( "transition" );
+                throw new ArgumentNullException("transition");
             }
             if (transition.Length != TransitionLength)
             {
-                throw new Exception( "Syntax error (" + transition + ")." );
+                throw new Exception("Syntax error (" + transition + ").");
             }
             foreach (string transitionValue in transition)
             {
-                if (!Plug.IsLegalPlugValue( transitionValue ))
+                if (!Plug.IsLegalPlugValue(transitionValue))
                 {
-                    throw new Exception( "Syntax error (" + transition + ")." );
+                    throw new Exception("Syntax error (" + transition + ").");
                 }
             }
 
@@ -147,17 +147,17 @@ namespace LogicCircuit.GateTypes
             StringBuilder inputPlugValuesSB = new StringBuilder();
             for (int i = 0; i < InputPlugCount; i++)
             {
-                inputPlugValuesSB.Append( transition[ i ] + " " );
+                inputPlugValuesSB.Append(transition[i] + " ");
             }
             if (inputPlugValuesSB.Length != 0)
             {
-                inputPlugValuesSB.Remove( inputPlugValuesSB.Length - 1, 1 );
+                inputPlugValuesSB.Remove(inputPlugValuesSB.Length - 1, 1);
             }
             string inputPlugValues = inputPlugValuesSB.ToString();
 
-            if (transitions.ContainsKey( inputPlugValues ))
+            if (transitions.ContainsKey(inputPlugValues))
             {
-                throw new Exception( "Duplicate (" + transition + ")." );
+                throw new Exception("Duplicate (" + transition + ").");
             }
 
             //
@@ -166,16 +166,16 @@ namespace LogicCircuit.GateTypes
             StringBuilder outputPlugValuesSB = new StringBuilder();
             for (int i = InputPlugCount; i < TransitionLength; i++)
             {
-                outputPlugValuesSB.Append( transition[ i ] + " " );
+                outputPlugValuesSB.Append(transition[i] + " ");
             }
             if (outputPlugValuesSB.Length != 0)
             {
-                outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+                outputPlugValuesSB.Remove(outputPlugValuesSB.Length - 1, 1);
             }
             string outputPlugValues = outputPlugValuesSB.ToString();
 
             // Add the (inputPlugValues, outputPlugValues) key-value-pair into the transitions.
-            transitions.Add( inputPlugValues, outputPlugValues );
+            transitions.Add(inputPlugValues, outputPlugValues);
         }
 
         public override void EndConstruction()
@@ -183,40 +183,40 @@ namespace LogicCircuit.GateTypes
             // Validate the phase of construction.
             if (constructionPhase != BasicGateTypeConstructionPhase.TRANSITIONS)
             {
-                throw new Exception( "Missing keyword." );
+                throw new Exception("Missing keyword.");
             }
 
             // Advance the phase of construction.
             constructionPhase = BasicGateTypeConstructionPhase.END;
         }
 
-        public override Gate Instantiate( string name )
+        public override Gate Instantiate(string name)
         {
-            return new BasicGate( name, this );
+            return new BasicGate(name, this);
         }
 
-        public string Evaluate( string inputPlugValues )
+        public string Evaluate(string inputPlugValues)
         {
             // TODO: Think about replacing the following piece of code with TryGetMethod.
             string outputPlugValues;
             try
             {
                 // The transition function contains the mapping for the inputs.
-                outputPlugValues = transitions[ inputPlugValues ];
+                outputPlugValues = transitions[inputPlugValues];
             }
             catch (KeyNotFoundException)
             {
                 // The transition fucntion does not contain the mapping for the inputs, hence implicit mapping is used.
-                string outputPlugValue = inputPlugValues.Contains( "?" ) ? "?" : "0";
+                string outputPlugValue = inputPlugValues.Contains("?") ? "?" : "0";
                 
                 StringBuilder outputPlugValuesSB = new StringBuilder();
                 for (int i = 0; i < OutputPlugCount; i++)
                 {
-                    outputPlugValuesSB.Append( outputPlugValue + " " );
+                    outputPlugValuesSB.Append(outputPlugValue + " ");
                 }
                 if (outputPlugValuesSB.Length != 0)
                 {
-                    outputPlugValuesSB.Remove( outputPlugValuesSB.Length - 1, 1 );
+                    outputPlugValuesSB.Remove(outputPlugValuesSB.Length - 1, 1);
                 }
                 outputPlugValues = outputPlugValuesSB.ToString();
             }

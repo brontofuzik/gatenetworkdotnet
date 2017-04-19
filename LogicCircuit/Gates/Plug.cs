@@ -35,7 +35,7 @@ namespace LogicCircuit.Gates
             }
             set
             {
-                if (!IsLegalPlugValue( value ))
+                if (!IsLegalPlugValue(value))
                 {
                     throw new Exception("Syntax error.");
                 }
@@ -48,7 +48,7 @@ namespace LogicCircuit.Gates
             return (plugValue.Equals("0") || plugValue.Equals("1") || plugValue.Equals("?"));
         }
 
-        public void PlugSourceConnection( Connection sourceConnection )
+        public void PlugSourceConnection(Connection sourceConnection)
         {
             if (this.sourceConnection != null)
             {
@@ -60,9 +60,9 @@ namespace LogicCircuit.Gates
             sourceConnection.TargetPlug = this;
         }
 
-        public void PlugTargetConnection( Connection targetConnection )
+        public void PlugTargetConnection(Connection targetConnection)
         {
-            targetConnections.Add( targetConnection );
+            targetConnections.Add(targetConnection);
             
             targetConnection.SourcePlug = this;
         }

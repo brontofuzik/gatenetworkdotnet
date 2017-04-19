@@ -131,17 +131,17 @@ namespace LogicCircuit.Gates
             }
         }
 
-        public override void SetInputPlugValues( string inputPlugValuesString )
+        public override void SetInputPlugValues(string inputPlugValuesString)
         {
-            string[] inputPlugValues = inputPlugValuesString.Split( ' ' );
+            string[] inputPlugValues = inputPlugValuesString.Split(' ');
             if (inputPlugValues.Length != InputPlugCount - 2)
             {
-                throw new Exception( "Syntax error." );
+                throw new Exception("Syntax error.");
             }
 
             for (int i = 0; i < InputPlugCount - 2; i++)
             {
-                InputPlugs[ i ].Value = inputPlugValues[ i ];
+                InputPlugs[i].Value = inputPlugValues[i];
             }
         }
 
