@@ -1,5 +1,0 @@
-C:\Documents and Settings\Lukáš Kúdela\Dokumenty\Visual Studio 2008\Projects\GateNetworkDotNet\GateNetworkDotNet\bin\Release\GateNetworkDotNet.exe
-C:\Documents and Settings\Lukáš Kúdela\Dokumenty\Visual Studio 2008\Projects\GateNetworkDotNet\GateNetworkDotNet\bin\Release\GateNetworkDotNet.pdb
-C:\Documents and Settings\Lukáš Kúdela\Dokumenty\Visual Studio 2008\Projects\GateNetworkDotNet\GateNetworkDotNet\obj\Release\ResolveAssemblyReference.cache
-C:\Documents and Settings\Lukáš Kúdela\Dokumenty\Visual Studio 2008\Projects\GateNetworkDotNet\GateNetworkDotNet\obj\Release\GateNetworkDotNet.exe
-C:\Documents and Settings\Lukáš Kúdela\Dokumenty\Visual Studio 2008\Projects\GateNetworkDotNet\GateNetworkDotNet\obj\Release\GateNetworkDotNet.pdb
